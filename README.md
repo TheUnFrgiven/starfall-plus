@@ -1,98 +1,58 @@
-# Galactacians · Earth Patrol
+# Starfall+
 
-## Starfall Relay — Unity expedition
+A child-friendly pixel-art maths game: explore a spaceship as an astronaut, collect supplies, solve questions to confirm upgrades, and defend against growing swarms of elemental meteors.
 
-The continuous pixel-art action-defense game is in [unity/starfall-relay](unity/starfall-relay/README.md). Open that folder with Unity 6000.6.7f1 and run `Assets/Scenes/Moonvale.unity`. Captain Aria explores a starship deck, uses math to authorize permanent upgrades, and defends the relay against growing meteor swarms. This revision includes fixed rifle poses, cannon upgrade signs, power-scaling briefings, illustrated menus and an original synthesized soundtrack. See the [implementation notes](unity/starfall-relay/Docs/relay-polish.md) for the forecast model and review limits.
+**This Unity project is the active game and the base for future development.** The former Galactacians browser and Godot projects are historical references in `archive/galactacians/`. Their design register does not govern Starfall+. This direction was confirmed on 17 November 2026.
 
+- **Engine:** Unity 6000.6.7f1; gameplay in C#.
+- **Open:** this repository root in Unity Hub, then `Assets/Scenes/StarfallPlus.unity`.
+- **Backend:** Supabase Auth/PostgreSQL and a TypeScript account gateway in [Backend](Backend/README.md).
+- **Game page:** [Starfall+](https://theunfrgiven.github.io/starfall-plus/).
+- **Parent dashboard:** [Starfall+ learning dashboard](https://starfall-plus-dashboard.vercel.app/).
+- **Repository:** [TheUnFrgiven/starfall-plus](https://github.com/TheUnFrgiven/starfall-plus).
+- **Current decisions:** [Docs/DECISIONS.md](Docs/DECISIONS.md).
+- **Verified state and remaining work:** [Docs/PROJECT_STATUS.md](Docs/PROJECT_STATUS.md).
+- **Checkpoint and recovery:** [Docs/CHECKPOINT.md](Docs/CHECKPOINT.md).
 
-## Approved native rebuild — 14 October 2026
+## Included in the baseline
 
-The [complete curriculum and game design](docs/curriculum-game-design.md) specifies 36 missions across six themed worlds, teaching interactions, progression, menus and acceptance checks. The first playable release remains six introductory missions. The full campaign is designed, not yet implemented.
+Manual astronaut movement and automatic shooting; daytime resource collection and persistent upgrades; night swarms; Towers, Shield, Collector, Blaster, Drones and Repair on one upgrade page; persistent Health with minimal dawn healing and a recharging Shield. The expanded ship uses shared rendering/collision coordinates and smaller building signs.
 
-The separate curriculum rebuild uses **Godot and typed GDScript**. The completed [design decision register](docs/migration-decisions.md) is the source of truth for the rebuild. First milestone: one complete curriculum mission, followed by six missions and then additional modes. Existing browser builds remain preserved below as reference prototypes; their mechanics do not describe the approved native design.
+The floating Bot provides a staged tutorial and contextual help. The home menu offers Play, Learn maths, Collection and Settings. Collection contains progressive claimable Unlockables, colors, Statistics and Tools. Artwork uses the established pixel-art assets and crisp filtering; the Starfall+ wordmark includes a pixel plus.
 
-The [native project](godot/README.md) now includes **six playable Earth Orbit missions and five floating astronaut roles**. Double-click `Play-Galactacians.cmd` on the configured Windows machine, or open `godot/project.godot` in Godot 4.7.2 and press F5. Adventure opens the chapter path. It includes addition/subtraction teaching, question-earned crew, preparation, waves, retries, saving and lesson unlocks. Reward, first-level and chapter checks pass; Windows renders were inspected. The remaining 30 designed missions, adaptive review, production narration and mobile testing remain pending.
+Fourteen maths topics include Make ten, Make twenty, Make zero, doubles, near doubles, skip counting and missing numbers. Players choose Easy, Medium or Challenge. Worked examples animate the model, then ask a new similar question; a demonstration cannot purchase an upgrade. Learning evidence distinguishes independent answers, help, first-check accuracy, response time and spaced recall.
 
-A fresh playable browser prototype for a cheerful tower-defense game powered by small arithmetic wins. Built from scratch after reviewing the earlier Galactacians game.
+Parent accounts use a learner nickname. Email signup and confirmation have been verified with the owner. Private parent/teacher reporting, classes, assignments and server-graded comparisons are implemented; their complete live multi-account verification remains open. Google sign-in still needs provider configuration.
 
-## Play
+## Run and build
+
+The normal build saves progress and can upload signed-in learning events. Preview is an isolated demonstration: it neither saves progress nor uploads gameplay statistics. Use the normal build for account/statistics verification.
 
 ```sh
-npm start
+# Substitute your Unity executable path if needed.
+Unity -batchmode -nographics -quit -projectPath . -executeMethod StarfallPlusBuild.BuildMac -logFile build-mac.log
+Unity -batchmode -nographics -quit -projectPath . -executeMethod StarfallPlusBuild.BuildPreview -logFile build-preview.log
 ```
 
-Open **http://127.0.0.1:8088/**. Node 20+ is required for the local server; the game itself is static HTML, CSS and JavaScript with no build step, production package dependencies, remote assets, or backend. A generic static server also works.
+Outputs: `Build/StarfallPlus.app` and `Build/StarfallPlusPreview.app`. Display names are **Starfall+** and **Starfall+ Preview**. The normal desktop app identifier is `com.starfallplus.game`; Preview uses `com.starfallplus.preview`.
 
-## The new loop
+For a new checkout, copy `Assets/Resources/StarfallOnline.example.txt` to the ignored `StarfallOnline.json` and supply public client configuration. The owner's local checkout is configured. Never commit SMTP credentials, server keys, sessions, personal saves or student records.
 
-1. Every mission attempt starts with **6 energy**, including retries. Previous savings and losses do not change this allowance.
-2. Pick one of **five distinct shape towers**, then tap a placement pad. Clear lane ribbons, a ghost defender, and range previews show where it can act. Keyboard focus and touch support the same field.
-3. In the first mission, place your first defender to begin the **8-second build countdown**. Later missions begin their countdown on entry. Cute aliens float **right to left** toward Earth, whose face becomes worried when they get close. Amber entry arrows count down the next arrival in each threatened lane.
-4. Open **Earn energy** for one question. Combat pauses for thinking: a hint appears after **10 seconds**, then the solution appears and play resumes at **20 seconds**. A correct answer earns **1 energy** and returns to combat automatically. Merely revealing the answer earns nothing. Recharge becomes available again after **3 seconds of active play**.
-   The cooldown advances during active combat and build countdowns. There is no standalone tactical Pause button; Menu and switching away from the tab suspend play for interruptions.
-5. Waves continue automatically after a **5-second build window**. No energy is awarded for waiting, wave clears, or kills. Reposition or recycle defenses while building, then solve a question when the team needs another defender.
-6. Complete all three waves, earn mission stars, and continue your six-stop journey. Each mission has its own attack pattern: first contact, outside-lane couriers, shifting neighboring lanes, grouped swarms, shield convoys, and a homecoming relay. Stars buy Earth colors; every tower is available from the start.
-
-| Shape    | Tower  | Role                                               | Energy |
-| -------- | ------ | -------------------------------------------------- | ------ |
-| Circle   | Pebble | Rapid, short-range shots for scouts and skaters    | 2      |
-| Triangle | Prism  | Slow, long-range beam that ignores armor           | 3      |
-| Square   | Bricky | Durable blocker that reflects part of an attack    | 2      |
-| Diamond  | Frost  | Area slow across its own and two neighboring lanes | 3      |
-| Pentagon | Poppy  | Area damage against clustered swarms               | 4      |
-
-The home screen leads straight into play. **Menu** contains navigation everywhere; there is no permanent sidebar. **Practice** combines operation selection with local learning records, streaks, and daily activity. Its three-question sets remain untimed and advance automatically after a correct answer. A tower collection, cosmetic shop, and saved settings remain available. Sound uses synthesized tones. Less-motion mode disables decorative animation. Math supports addition, nonnegative subtraction, multiplication, and exact division. Starter division stays within a single-digit dividend; more advanced fact practice may use a two-digit dividend.
-
-## Scope and honest boundaries
-
-- This is a **playable design slice**, not a finished online game or a validated educational curriculum. Arithmetic fluency is the focus; ages 7–15 have very different needs, so math level is chosen by comfort.
-- Friends and rankings are future work and are hidden from the current navigation. No friend accounts, invitations, messages, or live competitors are simulated as real.
-- Reminders are **in-app only**. There are no push notifications or background deliveries.
-- Progress is stored on this browser/device under `galactacians-v2`. It is not cloud-synced. The old `planet-math-defense-save` is untouched.
-- Mission energy lasts for one attempt. Leaving or reloading restarts the battle with six energy. A correct battle answer adds three energy, once per question. Preparation allows full tower refunds; active waves offer partial refunds. Historical wallet data is retained for compatibility but no longer funds combat.
-- Mission stars pay only when a new best is earned. Accuracy tracks independent first tries separately from assisted successes. One solved question extends the daily learning streak; combat by itself does not.
-- Practice earns XP and learning progress; five solved questions earn one cosmetic star per local day. Hinted solutions count, passive answer reveals do not. The daily star cannot be claimed twice by reloading.
-- Tower matchups, costs, timed battle support, mission pacing, and educational benefit still need real playtesting. No effectiveness or certification claim is made. Use the short [player observation guide](docs/playtest-guide.md).
-
-## Platform direction
-
-Keep the shared JavaScript game while proving the gameplay. The intended packaging route is [Capacitor for iOS and Android](https://capacitorjs.com/docs), which can use an existing JavaScript app, and [Tauri for Windows](https://v2.tauri.app/), which supports an existing web frontend. These are planned native containers, **not builds already delivered or tested**. Device performance, touch ergonomics, app lifecycle, durable saves, signing, and store submission remain release work.
-
-Read [the redesign blueprint](docs/redesign-blueprint.md) for the old-game audit, why lanes and a wallet were chosen, educational sources, balance hypotheses, and the roadmap to a production learning hub.
-
-## Code map
-
-- `index.html` — new app entry.
-- `src/v2/app.js` / `app.css` — hub, navigation, practice, dialogs and settings.
-- `src/v2/battle.js` / `battle.css` — simulation, lane board, enemies and tower behavior.
-- `src/v2/data.js` — tower, mission and cosmetic concepts.
-- `src/v2/encounters.js` — eighteen authored waves with matching lane warnings and short teaching cues.
-- `src/v2/learning.js` — arithmetic, safe local saves, rewards, streaks and progression.
-- `src/v2/icons.js` — original SVG illustrations and icons.
-- `assets/fonts` — locally bundled Nunito with its SIL Open Font License.
-- `server.cjs` — local-only static development server.
-
-## Validate
+## Verification
 
 ```sh
-npm install
+Unity -batchmode -nographics -quit -projectPath . -executeMethod StarfallPlusBaselineChecks.Run -logFile baseline-checks.log
+Unity -batchmode -nographics -quit -projectPath . -executeMethod StarfallPlusLearningUpgradeChecks.Run -logFile learning-checks.log
+cd Backend
+npm ci --ignore-scripts
 npm test
-npm run test:browser
+npx deno@2.5.6 check --config deno.json supabase/functions/accounts/index.ts
 ```
 
-The browser suite uses installed Google Chrome (`channel: 'chrome'`) through Playwright. If Chrome is absent, install it or change the test configuration to use a Playwright browser. It starts the local server when necessary. Tests cover arithmetic validity and hints/retries, reward deduplication, calendar dates, malformed saves, the complete hub, saved preferences, cosmetics, desktop/mobile layouts, battle economy, all tower roles, menu/math/hidden-tab suspension, and win/loss outcomes. Screenshots and failure traces are written under `test-results/`.
+Baseline checks cover identity, canonical scene and a non-destructive, repeatable legacy-save import. Learning checks generate 21,000 questions and exercise fixed targets, answer choices, upgrade authorization and expanded-map collision. PostgreSQL tests cover account isolation, controlled writes, private comparisons and challenge replay. Builds and automated checks do not establish phone usability, long-session balance or educational effectiveness.
 
-The gameplay regression suite checks two different full-health first-mission strategies at the same sixteen-energy total spend, including one without Prism or Frost. It also completes all six missions from six starting energy by solving only when a planned reinforcement is needed. A starter-only formation cannot fund itself through kills or wave clears. Tests cover lane warnings, directional and area range marks, touch placement, and identical retry budgets for old empty and rich profiles. These scenarios check intended choices; they do not replace player observation.
+## Compatibility and history
 
-Verified **7 October 2026**: **18 logic tests and 42 browser tests passed**. Desktop and phone screenshots were also inspected, with no browser exceptions or horizontal overflow.
+Known desktop save files from the older Unity app are copied on first normal launch if the new file does not exist. Originals are retained. Save filenames, database identifiers, existing account IDs and the working dashboard URL remain stable compatibility contracts; branding does not reset player records. Browser/Godot saves are separate formats and are not silently imported.
 
-## Earlier prototype
-
-The old files remain available for reference and comparison:
-
-- `http://127.0.0.1:8088/game-menu.html` — old main menu.
-- `http://127.0.0.1:8088/play.html?mode=campaign` — old campaign.
-- `http://127.0.0.1:8088/play.html?mode=infinite` — old infinite mode.
-- [Archived README](docs/legacy-readme.md), `PROJECT_MEMORY.md`, and the earlier curriculum documents describe the previous direction. The new [redesign blueprint](docs/redesign-blueprint.md) takes precedence for the new game.
-
-Legacy auth pages are historical front-end prototypes, not production authentication. The new design does not ask children for an email, password, or birth date.
+Historical prompts, artwork notes and previous status reports remain in [Docs/history](Docs/history/README.md). The [checkpoint record](Docs/CHECKPOINT.md) identifies the original source commits and the preserved local Godot work. Open issues are recorded honestly; this checkpoint is a development base, not a completed mobile release.

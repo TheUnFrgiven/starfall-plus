@@ -1,9 +1,5 @@
-# Project Separation
+# Starfall+ workspace boundary
 
-This folder is the Galactacians game project.
+The active game is this root Unity project in `/Users/theunfrgiven/Documents/Galactacians`, published to `TheUnFrgiven/starfall-plus`. This is separate from the LVL social application and the Playground symlink. Do not alter those projects for game work.
 
-The XApp social media PHP project lives separately at:
-
-`/Applications/XAMPP/xamppfiles/htdocs/xapp`
-
-Do not use `/Users/theunfrgiven/Documents/Playground` for game work. That path is a symlink to XApp.
+`archive/galactacians/` preserves the older browser and Godot versions. `Docs/history/` contains earlier Unity notes. The previous standalone Unity folder is retained as a checkpoint source. Current decisions and status live in `Docs/` at this root.
