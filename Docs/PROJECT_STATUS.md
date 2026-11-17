@@ -35,4 +35,4 @@ The actual public client configuration is ignored. A fresh clone uses the exampl
 
 ## Rebrand verification
 
-The Starfall+ identity and save-migration checks, 21,000-question checks, PostgreSQL/backend tests, Deno check and both renamed Mac builds passed. The dashboard returns HTTP 200 with its Starfall+ title on both new and legacy domains. Supabase project/sender labels and Auth redirect settings use the new brand; both gateway origins are supported. Native/mobile callback completion is still pending.
+The Starfall+ identity and save-migration checks, 21,000-question checks, PostgreSQL/backend tests, Deno check and both renamed Mac builds passed. The dashboard returns HTTP 200 with its Starfall+ title on both new and legacy domains. The Supabase project label and Auth redirect settings use the new brand; both gateway origins are supported. The SMTP display-name save was submitted, but its persistence needs a later check because the hosted settings page became blank on reload. Credentials were not changed. Native/mobile callback completion is still pending.
