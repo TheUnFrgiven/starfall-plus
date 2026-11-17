@@ -27,6 +27,15 @@ internal static class RuneholdLearningUpgradeChecks
             Require(profile.Independent.Length == 14 && profile.Independent[0] == 4 && profile.Accent == 7, "Old learning progress changed.");
             using (var p = new RuneholdEconomyChecks.Probe())
             {
+                p.Set("online", new StarfallOnlineConfig { url = "https://example.test", publishableKey = "public-test-key", emailReady = true });
+                p.Set("parentAccepted", true); p.Set("accountUsername", "parent_1"); p.Set("accountEmail", "parent@example.test"); p.Set("accountPassword", "short");
+                Require(((string)p.Call("AccountFormHint")).Contains("5/12"), "Short password has no actionable explanation.");
+                p.Set("accountPassword", "test-only-long-password");
+                Require((string)p.Call("AccountFormHint") == "", "Valid signup form is blocked.");
+                p.Set("accountUsername", "parent with spaces");
+                Require(((string)p.Call("AccountFormHint")).StartsWith("Username:"), "Invalid username is not explained.");
+                p.Set("accountUsername", "parent_1"); p.Set("parentAccepted", false);
+                Require(((string)p.Call("AccountFormHint")).StartsWith("Tick"), "Parent attestation requirement is not explained.");
                 var invalid = new Vector2(float.NaN, float.NaN);
                 var spawn = (Vector2)p.Call("NearestDeckPosition", invalid);
                 Require((bool)p.Call("CanStandOnDeck", spawn), "Expanded map fallback is off the floor.");

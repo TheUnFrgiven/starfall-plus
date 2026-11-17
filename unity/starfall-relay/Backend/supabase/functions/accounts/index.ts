@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.119.0";
+import { signupFailure } from "./account-errors.mjs";
 
 const url = Deno.env.get("SUPABASE_URL")!;
 const key = Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") ?? "{}") as Record<string,string>)[0] ?? Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -36,7 +37,7 @@ Deno.serve(async (request) => {
     if (body.action === "signup") {
       if (body.parentAccepted !== "yes" || !/^[a-z0-9_]{3,24}$/.test(handle) || !emailInput.includes("@") || password.length < 12 || password.length > 128) return reply(400,{error:"Use a parent email, a 3–24 character username and a password of at least 12 characters"});
       const {data,error} = await auth.auth.signUp({email:emailInput,password,options:{data:{username:handle},emailRedirectTo:recoveryRedirect}});
-      if (error) return reply(400,{error:"Account could not be created. Check the details or sign in instead."});
+      if (error) { const failure = signupFailure(error); return reply(failure.status,{error:failure.error}); }
       return reply(200,{session:data.session,message:"Check the parent's email to confirm the account, then sign in."});
     }
     if (body.action === "login" || body.action === "recover") {

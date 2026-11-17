@@ -154,6 +154,22 @@ public sealed partial class RuneholdGame
         GUIStyle style = UiStyle(23, UiInk); style.padding = new RectOffset(12, 12, 6, 6); style.wordWrap = false;
         return password ? GUI.PasswordField(input, value, '●', 128, style) : GUI.TextField(input, value, 100, style);
     }
+    private string AccountFormHint()
+    {
+        if (!OnlineConfigured) return "Online accounts are not connected. You can play on this device.";
+        if (accountBusy) return "Connecting…";
+        if (!parentAccepted) return "Tick the parent, guardian or teacher box to continue.";
+        if (accountCreate)
+        {
+            if (!online.emailReady) return "Account email setup is pending. You can play on this device.";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(accountUsername.Trim().ToLowerInvariant(), "^[a-z0-9_]{3,24}$")) return "Username: use 3–24 letters, numbers or underscores, with no spaces.";
+            if (!System.Text.RegularExpressions.Regex.IsMatch(accountEmail.Trim(), @"^[^\s@]+@[^\s@]+\.[^\s@]+$")) return "Enter a valid parent email address.";
+            if (accountPassword.Length < 12) return "Password: " + accountPassword.Length + "/12 characters. Add " + (12 - accountPassword.Length) + " more to continue.";
+        }
+        else if (string.IsNullOrWhiteSpace(accountUsername) && string.IsNullOrWhiteSpace(accountEmail)) return "Enter your username or email address.";
+        if (accountPassword.Length == 0) return "Enter your password to sign in.";
+        return "";
+    }
     private void DrawAccountScreen()
     {
         if (nicknamePrompt)
@@ -182,20 +198,20 @@ public sealed partial class RuneholdGame
             bool enabled = GUI.enabled; GUI.enabled &= OnlineConfigured && !accountBusy;
             accountUsername = AccountField("Username", accountUsername, new Rect(334, 314, 414, 88));
             accountEmail = AccountField(accountCreate ? "Parent email" : "Email (or use username)", accountEmail, new Rect(786, 314, 414, 88));
-            accountPassword = AccountField("Password · 12+ characters for a new account", accountPassword, new Rect(334, 420, 866, 88), true);
+            accountPassword = AccountField(accountCreate ? "Password · " + accountPassword.Length + "/12 characters minimum" : "Password", accountPassword, new Rect(334, 420, 866, 88), true);
             Rect parentRow = new Rect(334, 523, 866, 42);
             UiRound(new Rect(parentRow.x, parentRow.y + 7, 28, 28), UiBlue, 3);
             UiRound(new Rect(parentRow.x + 2, parentRow.y + 9, 24, 24), parentAccepted ? UiBlue : Color.white, 2);
             if (parentAccepted) UiText("✓", new Rect(parentRow.x, parentRow.y + 4, 28, 32), 23, true, Color.white, TextAnchor.MiddleCenter);
             UiText("I am the parent, guardian or teacher setting up this account.", new Rect(parentRow.x + 42, parentRow.y, parentRow.width - 42, parentRow.height), 21);
             if (GUI.Button(parentRow, GUIContent.none, GUIStyle.none)) parentAccepted = !parentAccepted;
-            if (MenuButton(accountCreate ? online.emailReady ? "Create account" : "Email setup pending" : "Sign in", new Rect(334, 578, 414, 62), Cyan, parentAccepted && (!accountCreate || online.emailReady && accountPassword.Length >= 12), true)) StartCoroutine(Authenticate());
+            if (MenuButton(accountBusy ? "Connecting…" : accountCreate ? online.emailReady ? "Create account" : "Email setup pending" : "Sign in", new Rect(334, 578, 414, 62), Cyan, AccountFormHint().Length == 0, true)) StartCoroutine(Authenticate());
             if (MenuButton(googleAvailable ? "Continue with Google" : "Google setup pending", new Rect(786, 578, 414, 62), Gold, parentAccepted && googleAvailable)) BeginGoogleSignIn();
             GUI.enabled = enabled;
             if (MenuLink("Play on this device", new Rect(334, 653, 414, 54))) { nicknamePrompt = true; accountNote = ""; }
             if (MenuLink("Forgot password?", new Rect(786, 653, 414, 54)) && OnlineConfigured && parentAccepted) StartCoroutine(RecoverAccount());
         }
-        UiText(OnlineConfigured ? accountNote : "Online accounts need the game's server connected. You can play on this device now.", new Rect(334, 716, 866, 62), 20, false, UiMuted);
+        UiText(accountNote.Length > 0 ? accountNote : SignedIn ? "" : AccountFormHint(), new Rect(334, 716, 866, 70), 20, false, UiMuted);
     }
     private IEnumerator ChangeAccount()
     {
