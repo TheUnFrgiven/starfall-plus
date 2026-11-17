@@ -12,12 +12,12 @@ public sealed partial class RuneholdGame
     }
 
     private HubPage MenuParent => hubPage == HubPage.Progress || hubPage == HubPage.Achievements || hubPage == HubPage.Armory ? HubPage.More
-        : hubPage == HubPage.Lesson || hubPage == HubPage.Results || hubPage == HubPage.Practice ? HubPage.Galaxy : HubPage.Home;
+        : hubPage == HubPage.Difficulty ? HubPage.Lesson : hubPage == HubPage.Account ? HubPage.Settings : hubPage == HubPage.Lesson || hubPage == HubPage.Results ? HubPage.Galaxy : HubPage.Home;
 
     private void DrawRelayMenuShell()
     {
         Fill(0, 0, 1280, 800, Hex("f2f6fa"));
-        if (hubPage == HubPage.Home) return;
+        if (hubPage == HubPage.Home || hubPage == HubPage.Account && !learningProfile.WelcomeComplete) return;
         if (MenuLink("<  Back", new Rect(207, 35, 180, 58))) NavigateHub(MenuParent);
     }
 

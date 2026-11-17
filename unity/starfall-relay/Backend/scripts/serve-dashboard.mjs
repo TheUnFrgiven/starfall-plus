@@ -1,0 +1,3 @@
+import {createServer} from 'node:http';
+import {readFile} from 'node:fs/promises';
+createServer(async(req,res)=>{if(req.method!=='GET'||!['/','/index.html'].includes(req.url.split('?')[0])){res.writeHead(404);return res.end();}try{const html=await readFile(new URL('../dashboard/dist/index.html',import.meta.url));res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(html);}catch{res.writeHead(503);res.end('Build the dashboard first.');}}).listen(4179,'127.0.0.1',()=>console.log('Dashboard preview: http://127.0.0.1:4179'));

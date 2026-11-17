@@ -42,7 +42,7 @@ public sealed partial class RuneholdGame
     private void OpenEquipmentBay(Upgrade upgrade, bool boostCannons = false)
     {
         turretMasteryPurchase = boostCannons || turretCount >= 4;
-        selectedUpgrade = upgrade; astronautUpgradeTab = upgrade >= Upgrade.PlasmaRifle;
+        selectedUpgrade = upgrade;
         raidBriefOpen = learningPanelOpen = false; buildPanelOpen = true; pilotWalking = false;
     }
 

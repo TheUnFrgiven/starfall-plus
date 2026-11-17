@@ -1,0 +1,7 @@
+{
+  "url": "https://YOUR_PROJECT.supabase.co",
+  "publishableKey": "YOUR_PUBLISHABLE_KEY",
+  "redirect": "starfallrelay://auth",
+  "dashboard": "https://YOUR_DASHBOARD_HOST/",
+  "emailReady": false
+}

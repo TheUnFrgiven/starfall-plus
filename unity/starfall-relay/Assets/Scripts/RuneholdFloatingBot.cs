@@ -8,7 +8,7 @@ public sealed partial class RuneholdGame
     private static readonly Vector2[][] BotRoutes = {
         new[] { new Vector2(1180, 230), new Vector2(1180, 540), new Vector2(1180, 70), new Vector2(940, 70), new Vector2(550, 70), new Vector2(940, 70), new Vector2(1180, 70) },
         new[] { new Vector2(1130, 51), new Vector2(1212, 51), new Vector2(1084, 51) },
-        new[] { new Vector2(1110, 733), new Vector2(1200, 733), new Vector2(1060, 733) },
+        new[] { new Vector2(1225, 230), new Vector2(1225, 555), new Vector2(1225, 700) },
         new[] { new Vector2(1190, 234), new Vector2(1125, 354), new Vector2(1190, 466), new Vector2(1190, 320) },
         new[] { new Vector2(1190, 200), new Vector2(1190, 470), new Vector2(1190, 620), new Vector2(1190, 340) }
     };
@@ -29,13 +29,13 @@ public sealed partial class RuneholdGame
         {
             return TryOpenBotAt(floatingBot);
         }
-        if (hovering || Input.GetMouseButton(0) || Input.touchCount > 0) botRest = .8f;
+        if (hovering) botRest = .25f;
         botRest = Mathf.Max(0, botRest - dt);
         if (reducedMotion) { floatingBot = route[0]; return false; }
         if (botRest <= 0)
         {
-            floatingBot = Vector2.MoveTowards(floatingBot, route[botStop], dt * 22);
-            if (Vector2.Distance(floatingBot, route[botStop]) < 1) { botStop = (botStop + 1) % route.Length; botRest = 2; }
+            floatingBot = Vector2.MoveTowards(floatingBot, route[botStop], dt * 34);
+            if (Vector2.Distance(floatingBot, route[botStop]) < 1) { botStop = (botStop + 1) % route.Length; botRest = .15f; }
         }
         return false;
     }

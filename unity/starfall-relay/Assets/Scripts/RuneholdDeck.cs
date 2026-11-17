@@ -4,10 +4,10 @@ public sealed partial class RuneholdGame
 {
     // Coordinates are traced against the existing 1280 x 800 deck illustration.
     // Render, collision, equipment, gates and the navigator share this transform.
-    private const float DeckScale = 1.75f;
+    private const float DeckScale = 3.5f;
     private static Vector2 DeckPoint(float x, float y) => new Vector2(640 + (x - 640) * DeckScale, 360 + (y - 360) * DeckScale);
     private static Vector2 DeckLocal(Vector2 position) => new Vector2(640, 360) + (position - new Vector2(640, 360)) / DeckScale;
-    private static Rect DeckRect => new Rect(-480, -270, 2240, 1400);
+    private static Rect DeckRect => new Rect(640 - 640 * DeckScale, 360 - 360 * DeckScale, 1280 * DeckScale, 800 * DeckScale);
     private Vector2 worldCamera;
     private static readonly Rect[] DeckPassages = {
         new Rect(24, 315, 282, 82), new Rect(976, 315, 280, 82),
@@ -53,9 +53,9 @@ public sealed partial class RuneholdGame
 
     private Vector2 NearestDeckPosition(Vector2 position)
     {
-        if (float.IsNaN(position.x) || float.IsNaN(position.y) || float.IsInfinity(position.x) || float.IsInfinity(position.y)) return new Vector2(640, 670);
+        if (float.IsNaN(position.x) || float.IsNaN(position.y) || float.IsInfinity(position.x) || float.IsInfinity(position.y)) return DeckPoint(640, 537) - new Vector2(0, 30);
         if (CanStandOnDeck(position)) return position;
-        Vector2 closest = new Vector2(640, 670); float distance = float.MaxValue;
+        Vector2 closest = DeckPoint(640, 537) - new Vector2(0, 30); float distance = float.MaxValue;
         // Used only for old saves and sparse capacitor drops, never per enemy per frame.
         for (int y = 28; y < 776; y += 16)
             for (int x = 34; x < 1250; x += 16)

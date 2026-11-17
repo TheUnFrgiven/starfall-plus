@@ -31,7 +31,8 @@ public sealed partial class RuneholdGame
         {
             int step = question.Operation == '+' || question.Operation == '-' ? Mathf.Min(question.First + question.Second > 20 ? 10 : 1, VisualStepTarget - visualSteps) : 1;
             string action = question.Operation == '+' ? "Add " + step + " cell" + (step == 1 ? "" : "s") : question.Operation == '-' ? "Take away " + step : question.Operation == '*' ? "Fill one group" : "Give one to each group";
-            if (MenuButton(action, new Rect(56, 545, 612, 52), Cyan)) { ShowTeachingHint(); visualSteps += step; }
+            if (question.MissingNumber && !questionSupported) action = "Explore with cells";
+            if (MenuButton(action, new Rect(56, 545, 612, 52), Cyan)) { ShowTeachingHint(); modelUsed = true; visualSteps += step; }
         }
         else UiText("Count what you made. What do you notice?", new Rect(56, 541, 612, 56), 22, true, UiBlue);
         UiCard(new Rect(720, 112, 528, 540), Gold);
@@ -40,8 +41,8 @@ public sealed partial class RuneholdGame
             DrawClearIcon(1, new Vector2(913, 150), 10, UiBlue);
             UiText("Let's work it out together", new Rect(744, 261, 480, 58), 29, true, UiInk, TextAnchor.MiddleCenter);
             UiText("The answer is " + question.Answer, new Rect(744, 335, 480, 70), 40, true, UiBlue, TextAnchor.MiddleCenter);
-            UiText("You can keep learning with help.", new Rect(760, 431, 448, 66), 24, false, UiMuted, TextAnchor.MiddleCenter);
-            if (MenuButton(learningPractice ? "Keep going" : "Build it!", new Rect(752, 540, 464, 76), Cyan, true, true)) FinishLearningResolution();
+            UiText("Watch the model. Then try a similar question.", new Rect(760, 431, 448, 66), 24, false, UiMuted, TextAnchor.MiddleCenter);
+            if (MenuButton("Try a similar one", new Rect(752, 540, 464, 76), Cyan, visualSteps >= VisualStepTarget, true)) TrySimilarQuestion();
         }
         else if (learningProfile.TypedAnswers) DrawNumberPad();
         else
@@ -66,6 +67,23 @@ public sealed partial class RuneholdGame
     private void DrawFriendlyModel(Rect area, bool interactive)
     {
         bool subtract = question.Operation == '-';
+        if (question.MissingNumber && !questionSupported && !questionResolved && !questionExplained)
+        {
+            UiText(subtract ? "What must you take away to leave " + question.Result + "?" : "What part is missing to make " + question.Result + "?", new Rect(area.x, area.y, area.width, 52), 24, true);
+            if (question.First <= 20 && learningProfile.PracticeDifficulty < 2)
+            {
+                int knownSlots = Mathf.Max(10, Mathf.Max(question.First, question.Result));
+                for (int i = 0; i < Mathf.Min(20, knownSlots); i++)
+                {
+                    Vector2 at = new Vector2(area.x + 24 + i % 10 * 53 + (i % 10 >= 5 ? 10 : 0), area.y + 96 + i / 10 * 48);
+                    PixelSurface(new Rect(at.x - 19, at.y - 20, 38, 40), Hex("d3e0eb"), 4);
+                    if (i < question.First) DrawEnergyCell(at, 32, Cyan);
+                }
+            }
+            else UiText("Known: " + question.First, new Rect(area.x, area.y + 80, area.width, 90), 42, true, UiBlue, TextAnchor.MiddleCenter);
+            UiText("Goal: " + question.Result, new Rect(area.x, area.y + 200, area.width, 54), 30, true, UiBlue, TextAnchor.MiddleCenter);
+            return;
+        }
         if (question.Operation == '*' || question.Operation == '/') { DrawFriendlyGroups(area); return; }
         bool large = question.First + question.Second > 20;
         if (large)
@@ -80,7 +98,7 @@ public sealed partial class RuneholdGame
                 float y = area.y + 60 + i * 74;
                 UiText(names[i], new Rect(area.x, y, area.width, 30), 23, true);
                 UiRound(new Rect(area.x, y + 38, area.width, 16), Hex("e1eaf5"), 7);
-                UiRound(new Rect(area.x, y + 38, Mathf.Max(8, area.width * values[i] / maximum), 16), i == 1 ? Gold : Cyan, 7);
+                if (values[i] > 0) UiRound(new Rect(area.x, y + 38, Mathf.Max(8, area.width * values[i] / maximum), 16), i == 1 ? Gold : Cyan, 7);
             }
             return;
         }

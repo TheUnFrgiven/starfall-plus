@@ -58,7 +58,7 @@ public sealed partial class RuneholdGame
         {
             float angle = opening ? i * 2.399963f : packAngle + UnityEngine.Random.Range(-.2f, .2f);
             float ring = UnityEngine.Random.Range(.83f, 1.06f);
-            Vector2 position = corePosition + new Vector2(Mathf.Cos(angle) * 1250 * ring, Mathf.Sin(angle) * 780 * ring);
+            Vector2 position = corePosition + new Vector2(Mathf.Cos(angle) * 2500 * ring, Mathf.Sin(angle) * 1560 * ring);
             int element = (enemiesSpawned / 8) % 4;
             int armorRoll = UnityEngine.Random.Range(0, 100);
             int hp = armorRoll < 80 ? 1 : armorRoll < 97 ? 3 : 6;

@@ -1,5 +1,13 @@
 # Starfall Relay
 
+## Accounts, purposeful maths and expanded ship — 17 November 2026
+
+The first launch offers parent account setup and a separate "What should we call you?" nickname prompt. Account, email, password and nickname controls live in Settings. The [parent and teacher dashboard](https://starfall-learning-dashboard.vercel.app/) is deployed against the Math Game Supabase project, with private class access and server-graded comparisons. Gmail SMTP is configured; a real confirmation-email delivery test and Google OAuth configuration remain outstanding. See [backend setup and verification](Backend/README.md).
+
+Learn maths now contains 14 topics. Make ten asks number bonds that equal exactly 10; Make twenty, Make zero, Doubles, Near doubles, counting by twos/fives/tens and Missing number add eight purposeful topics. Numerical examples and an Easy/Medium/Challenge choice lead into practice. Quick practice is removed. Worked examples animate the model and then ask a fresh similar question; they do not grant an upgrade by themselves. Statistics separates first-check accuracy, help, response time and spaced recall evidence from gameplay totals.
+
+The map is twice as wide and tall, map signs are 30% smaller, and Bot continues floating while movement is held. Six upgrades share one screen with before/after effects. Their mechanics are explained with proposed simplifications in [the upgrade review](Docs/upgrade-design-review.md). See [learning and gameplay verification](Docs/learning-and-accounts-pass.md).
+
 ## Collection and floating Bot — 17 November 2026
 
 Home keeps four clear, shaped actions: Play, Learn maths, Collection and Settings. A small elemental illustration adds color around the astronaut. Collection contains Unlockables, Statistics and Tools. A slowly floating, tappable Bot replaces fixed help buttons and explains the current screen; calmer motion keeps it still.

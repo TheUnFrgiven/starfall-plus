@@ -14,7 +14,7 @@ public sealed partial class RuneholdGame
     private string previousFactKey = "", learningFeedback = "";
     private bool questionIntro;
     private bool CanPersistProgress => Application.isPlaying && !previewRun;
-    private string LearningSavePath => Path.Combine(Application.persistentDataPath, "starfall-learning-v1.json");
+    private string LearningSavePath => Path.Combine(Application.persistentDataPath, "starfall-learning-v1" + (string.IsNullOrEmpty(accountLearner) ? "" : "-" + accountLearner) + ".json");
 
     private void LoadLearningProfile()
     {
@@ -57,7 +57,7 @@ public sealed partial class RuneholdGame
 
     private MathQuestion LearningQuestionData(StarfallQuestion source) => new MathQuestion { Text = source.Prompt, Answer = source.Answer, Choices = source.Choices,
         First = source.First, Second = source.Second, Operation = source.Operation, FactKey = source.Key,
-        Lesson = source.Lesson, Hint = source.Hint, Explanation = source.Explanation };
+        Lesson = source.Lesson, Result = source.Result, MissingNumber = source.MissingNumber, Hint = source.Hint, Explanation = source.Explanation };
     private void AssignLearningQuestion(StarfallQuestion source) { question = LearningQuestionData(source); }
 
     private void ResetLearningQuestion(bool practice)
@@ -65,14 +65,15 @@ public sealed partial class RuneholdGame
         questionSupported = questionExplained = questionHintVisible = questionResolved = false;
         learningPractice = practice; learningRecovery = false;
         visualSteps = 0; questionOpenTime = 0; visualMovedAt = -10;
+        questionStarted = Time.unscaledTime; modelUsed = demonstrationPending = false;
         questionAttempts = 0; selectedAnswer = -1;
         typedAnswer = ""; questionIntro = false;
     }
 
     private void BeginLearningPractice(bool recovery)
     {
-        if (!menuOpen) OpenAcademyMenu(HubPage.Practice);
-        StartStudySession(learningProfile.ActiveLesson);
+        if (!menuOpen) OpenAcademyMenu(HubPage.Galaxy);
+        selectedLesson = learningProfile.ActiveLesson; NavigateHub(HubPage.Difficulty);
     }
 
     private void HandleLearningKeys()
@@ -81,7 +82,7 @@ public sealed partial class RuneholdGame
         if (studyResult) { if (Input.GetKeyDown(KeyCode.Return)) ContinueStudy(); return; }
         if (questionExplained)
         {
-            if (Input.GetKeyDown(KeyCode.Return)) FinishLearningResolution();
+            if (Input.GetKeyDown(KeyCode.Return)) TrySimilarQuestion();
             return;
         }
         if (Input.GetKeyDown(KeyCode.H)) ShowTeachingHint();
@@ -108,8 +109,9 @@ public sealed partial class RuneholdGame
 
     private void ExplainQuestion()
     {
-        ShowTeachingHint(); questionExplained = true; visualSteps = VisualStepTarget;
-        answerFeedback = "Follow the example. Then we can keep going together.";
+        ShowTeachingHint(); questionExplained = true; demonstrationPending = true; visualSteps = 0;
+        demonstrationNextStep = Time.unscaledTime + .45f; typedAnswer = "";
+        answerFeedback = "Watch the cells move. Then try a new, similar question yourself.";
     }
 
     private void ResolveLearningAnswer(int choiceIndex)
@@ -121,6 +123,7 @@ public sealed partial class RuneholdGame
     private void SubmitLearningValue(int value)
     {
         if (phase != Phase.Quiz || questionExplained || questionResolved || (!learningPractice && !CanBuy(selectedUpgrade))) return;
+        RecordAttempt(value, value == question.Answer);
         questionAttempts++;
         if (value == question.Answer) { FinishLearningResolution(); return; }
         typedAnswer = "";
@@ -138,7 +141,7 @@ public sealed partial class RuneholdGame
 
     private void FinishLearningResolution()
     {
-        if (phase != Phase.Quiz || questionResolved || (!learningPractice && !CanBuy(selectedUpgrade))) return;
+        if (phase != Phase.Quiz || questionExplained || questionResolved || (!learningPractice && !CanBuy(selectedUpgrade))) return;
         questionResolved = true;
         bool independent = !questionSupported && questionAttempts == 1;
         if (!string.IsNullOrEmpty(question.FactKey))

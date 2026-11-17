@@ -115,7 +115,7 @@ public sealed partial class RuneholdGame
             for (int i = 0; i < 48; i++)
             {
                 float a = i * Mathf.PI * 2 / 48;
-                Vector2 point = corePosition + new Vector2(Mathf.Cos(a) * 282, Mathf.Sin(a) * 254);
+                Vector2 point = corePosition + new Vector2(Mathf.Cos(a) * 564, Mathf.Sin(a) * 508);
                 Fill(Mathf.Round(point.x), Mathf.Round(point.y), 7, 4, shieldColor);
             }
         }
@@ -177,34 +177,29 @@ public sealed partial class RuneholdGame
         UiText("Pick a tool. Solve its energy puzzle. Watch it grow!", new Rect(178, 57, 520, 30), 20, false, UiMuted);
         DrawClearMaterial(MaterialKind.Alloy, alloy, new Rect(720, 18, 240, 60));
         DrawClearMaterial(MaterialKind.Crystal, crystal, new Rect(976, 18, 280, 60));
-        if (MenuTab("Spaceship tools", new Rect(32, 120, 600, 60), !astronautUpgradeTab)) astronautUpgradeTab = false;
-        if (MenuTab("Astronaut tools", new Rect(650, 120, 598, 60), astronautUpgradeTab)) astronautUpgradeTab = true;
-        for (int i = 0; i < 3; i++)
+        if (turretCount > 0 && turretCount < 4)
         {
-            Upgrade kind = (Upgrade)((astronautUpgradeTab ? 3 : 0) + i);
-            Rect card = new Rect(32 + i * 414, 208, 388, 450); UiCard(card, UpgradeColor(kind));
-            UiText(FriendlyUpgrade(kind), new Rect(card.x + 20, card.y + 14, 348, 54), 28, true);
-            DrawMenuEquipmentArt(kind, new Vector2(card.center.x, card.y + 126), 112);
-            UiText("Level " + UpgradeLevel(kind) + " → " + (UpgradeLevel(kind) + 1), new Rect(card.x + 20, card.y + 188, 348, 34), 23, true, UiBlue);
-            UiText(FriendlyBenefit(kind), new Rect(card.x + 20, card.y + 229, 348, 70), 21, false, UiMuted);
+            if (MenuTab("Add Tower", new Rect(32, 120, 242, 56), !turretMasteryPurchase)) turretMasteryPurchase = false;
+            if (MenuTab("Improve Towers", new Rect(290, 120, 266, 56), turretMasteryPurchase)) turretMasteryPurchase = true;
+            UiText(turretMasteryPurchase ? "Every Tower: " + TurretDamage + " → " + (TurretDamage + 2) + " shot power" : "One more Tower covering the ship", new Rect(580, 120, 560, 56), 23, true, UiBlue);
+        }
+        else UiText("All upgrades in one place. Materials are spent only after you solve.", new Rect(32, 120, 1100, 56), 23, false, UiMuted);
+        for (int i = 0; i < 6; i++)
+        {
+            Upgrade kind = (Upgrade)i;
+            Rect card = new Rect(32 + i % 2 * 572, 196 + i / 2 * 184, 550, 170); UiCard(card, UpgradeColor(kind));
+            DrawMenuEquipmentArt(kind, new Vector2(card.x + 49, card.y + 52), 66);
+            UiText(FriendlyUpgrade(kind) + " · " + UpgradeLevel(kind) + " → " + (UpgradeLevel(kind) + 1), new Rect(card.x + 100, card.y + 8, 434, 35), 24, true);
+            UiText(UpgradeBenefit(kind, false) + " → " + UpgradeBenefit(kind, true), new Rect(card.x + 100, card.y + 44, 434, 59), 19, false, UiMuted);
             UpgradeCost(kind, out int metal, out int gems);
-            UiRound(new Rect(card.x + 20, card.y + 307, 348, 39), Hex("edf3fb"), 8);
-            UiText(metal + " metal + " + gems + " crystals", new Rect(card.x + 28, card.y + 308, 332, 37), 22, true);
+            UiText(metal + " metal + " + gems + " crystals", new Rect(card.x + 18, card.y + 110, 278, 43), 21, true);
             bool locked = kind != Upgrade.IonTurret && turretCount == 0, buy = CanBuy(kind);
-            if (MenuButton(locked ? "Build a tower first" : buy ? "Solve & upgrade" : "Resource help", new Rect(card.x + 20, card.y + 363, 348, 65), UpgradeColor(kind), !locked, buy))
+            if (MenuButton(locked ? "Tower first" : buy ? "Solve & upgrade" : "Need resources", new Rect(card.x + 306, card.y + 109, 226, 48), UpgradeColor(kind), !locked && !ListScrollBlocked, buy))
             {
                 selectedUpgrade = kind;
-                if (buy) StartUpgrade(kind);
-                else { buildPanelOpen = false; OpenResourceHelp(kind); }
+                if (buy) StartUpgrade(kind); else { buildPanelOpen = false; OpenResourceHelp(kind); }
             }
         }
-        if (!astronautUpgradeTab && turretCount > 0 && turretCount < 4)
-        {
-            if (MenuTab("Add a tower", new Rect(32, 699, 220, 64), !turretMasteryPurchase)) turretMasteryPurchase = false;
-            if (MenuTab("Power up all towers", new Rect(270, 699, 260, 64), turretMasteryPurchase)) turretMasteryPurchase = true;
-            UiText(turretMasteryPurchase ? "This upgrade makes every installed tower stronger." : "A new tower protects another part of your ship.", new Rect(555, 697, 435, 68), 23, false, UiMuted);
-        }
-        else UiText("Maths powers every upgrade. Asking for help is always welcome.", new Rect(32, 699, 955, 64), 23, false, UiMuted, TextAnchor.MiddleCenter);
     }
 
     private void DrawUpgradeRow(Upgrade upgrade, int y)

@@ -46,7 +46,7 @@ public sealed partial class RuneholdGame
     private GUIStyle UiStyle(int size, Color color, bool bold = false, TextAnchor anchor = TextAnchor.MiddleLeft)
     {
         return new GUIStyle(GUI.skin.label) { font = bold ? academyFont : academyBodyFont, fontSize = size,
-            alignment = anchor, wordWrap = true, padding = new RectOffset(), normal = { textColor = color } };
+            alignment = anchor, wordWrap = true, richText = false, padding = new RectOffset(), normal = { textColor = color } };
     }
 
     private void UiText(string copy, Rect rect, int size = 22, bool bold = false, Color? color = null, TextAnchor anchor = TextAnchor.MiddleLeft)

@@ -9,6 +9,7 @@ public sealed partial class RuneholdGame
     {
         learningProfile.CadetName = learningProfile.CadetName.Trim(); learningProfile.Validate();
         bool profileSaved = SaveLearningProfile(), journalSaved = SavePilotJournal();
+        if (SignedIn && accountLearner.Length > 0) StartCoroutine(OnlineRequest("/rest/v1/rpc/rename_learner", Body("learner", accountLearner, "nickname", learningProfile.CadetName), _ => accountNote = "Nickname saved."));
         bool success = profileSaved && journalSaved;
         menuSaveNote = !CanPersistProgress ? "Preferences applied to this preview." : success ? "Preferences saved. You're ready to fly." : "Couldn't save preferences. Please try again.";
         menuSaveColor = !CanPersistProgress || success ? Mint : Ember;
@@ -22,9 +23,10 @@ public sealed partial class RuneholdGame
 
     private void DrawPolishedSettings()
     {
-        HubHeading("Make yourself at home", "Choose your name, sound and the way you like to answer.");
+        HubHeading("Settings", "Choose your nickname, sound and answer style.");
+        if (MenuButton("Account", new Rect(1000, 172, 200, 52), Cyan)) NavigateHub(HubPage.Account);
         UiCard(new Rect(334, 240, 866, 100), Cyan);
-        UiText("Pilot name", new Rect(358, 252, 190, 35), 25, true);
+        UiText("Nickname", new Rect(358, 252, 190, 35), 25, true);
         UiText("Up to 20 letters", new Rect(358, 294, 190, 28), 19, false, UiMuted);
         Rect name = new Rect(568, 258, 608, 63);
         UiRound(name, Hex("e7f0fc"));

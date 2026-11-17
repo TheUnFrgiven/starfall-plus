@@ -66,6 +66,8 @@ public sealed partial class RuneholdGame : MonoBehaviour
         public int Answer;
         public int[] Choices;
         public int First, Second, Lesson;
+        public bool MissingNumber;
+        public int Result;
         public char Operation;
         public string FactKey, Hint, Explanation;
     }
@@ -107,7 +109,7 @@ public sealed partial class RuneholdGame : MonoBehaviour
     private readonly Rect[] pilotFrames = new Rect[4];
     private Rect alloyPickupUv, crystalPickupUv;
     private GUIStyle labelStyle, titleStyle, smallStyle, hugeStyle;
-    private Vector2 pilotPosition = new Vector2(640, 670);
+    private Vector2 pilotPosition = DeckPoint(640, 537) - new Vector2(0, 30);
     private int pilotFacing;
     private bool pilotWalking;
     private float pilotWalkCycle;
@@ -172,6 +174,7 @@ public sealed partial class RuneholdGame : MonoBehaviour
         InitializeAcademyMenu();
         InitializeCombinedExpedition();
         InitializeGuide();
+        InitializeAccount();
         shieldHp = Mathf.Clamp(shieldHp, 0, ShieldCapacity);
         pilotPosition = NearestDeckPosition(pilotPosition);
         worldCamera = pilotPosition;
@@ -181,6 +184,7 @@ public sealed partial class RuneholdGame : MonoBehaviour
 
     private void OnDestroy()
     {
+        Application.deepLinkActivated -= ReceiveAccountLink;
         foreach (Texture2D variant in liveryTextures.Values) Destroy(variant);
         foreach (Texture2D portrait in menuPortraits.Values) Destroy(portrait);
         foreach (Texture2D icon in pixelIcons.Values) Destroy(icon);
@@ -199,6 +203,8 @@ public sealed partial class RuneholdGame : MonoBehaviour
         corePulse += dt;
         UpdateExpeditionPresentation(dt);
         UpdateRelayMusic(dt);
+        UpdateWorkedExample();
+        UpdateCloudAccount();
         if (UpdateFloatingBot(dt)) return;
         UpdateTouchMovement();
         worldCamera = Vector2.Lerp(worldCamera, pilotPosition + new Vector2(0, -65), 1 - Mathf.Exp(-dt * 5));
@@ -236,14 +242,12 @@ public sealed partial class RuneholdGame : MonoBehaviour
         if (phase == Phase.Day && Input.GetKeyDown(KeyCode.B)) { buildPanelOpen = !buildPanelOpen; learningPanelOpen = false; }
         if (phase == Phase.Day && Input.GetKeyDown(KeyCode.L)) { OpenAcademyMenu(HubPage.Galaxy); return; }
         if (phase == Phase.Day && Input.GetKeyDown(KeyCode.E)) OpenNearbyUpgrade();
-        if (phase == Phase.Day && buildPanelOpen && Input.GetKeyDown(KeyCode.Tab)) astronautUpgradeTab = !astronautUpgradeTab;
         if (phase == Phase.Day && buildPanelOpen)
         {
-            if (!astronautUpgradeTab && turretCount > 0 && turretCount < 4 && Input.GetKeyDown(KeyCode.T)) turretMasteryPurchase = !turretMasteryPurchase;
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 6; i++)
                 if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i)))
                 {
-                    Upgrade choice = (Upgrade)((astronautUpgradeTab ? 3 : 0) + i);
+                    Upgrade choice = (Upgrade)i;
                     if (CanBuy(choice)) StartUpgrade(choice);
                     else { notice = MissingMaterials(choice); noticeTimer = 4; }
                     return;

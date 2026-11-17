@@ -114,7 +114,10 @@ public sealed partial class RuneholdGame
         if (guideOpen) return;
         if (menuOpen && phase != Phase.Quiz)
         {
-            if (hubPage == HubPage.Achievements)
+            if (hubPage == HubPage.Account) OpenBot(new[] { "A parent sets up the account using a username and password or Google. Then choose a nickname for your astronaut. Use a parent email for confirmation and password recovery.", "Your parent chooses who can see your progress and whether your nickname appears in private class comparisons. You can also play on this device without an account." });
+            else if (hubPage == HubPage.Difficulty) OpenBot(new[] { "Choose Easy, Medium or Challenge. The examples show the kinds of numbers you will see. You can change your choice any time, and there is no timer." });
+            else if (hubPage == HubPage.Galaxy) OpenBot(new[] { "Scroll to choose any of the fourteen maths topics. Make ten finds a missing part that makes exactly ten. Make zero takes a whole amount away from itself.", "Look at the short example, then choose a difficulty before you start." });
+            else if (hubPage == HubPage.Achievements)
                 OpenBot(collectionTab == 0 ? new[] { "These goals are progression tracks. Scroll to see them all. When a goal is ready, collect its credits. That same card then shows your next goal.", "For example: survive 1 night, collect the reward, then work toward 5 nights. Your progress and claimed rewards are saved." }
                     : new[] { "Scroll to see all eight colors. Earn color credits from goals and daily practice. Unlock a color once, then wear it whenever you like. Your astronaut, tools and lights will match." });
             else if (hubPage == HubPage.More) OpenBot(new[] { "Collection holds Unlockables, Statistics and Tools. Unlockables has your goals and colors. Statistics tracks your adventure and maths. Tools explains what each upgrade does." });

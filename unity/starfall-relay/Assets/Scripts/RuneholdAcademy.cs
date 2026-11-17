@@ -3,16 +3,15 @@ using UnityEngine;
 
 public sealed partial class RuneholdGame
 {
-    private enum HubPage { Home, Galaxy, Practice, Armory, Progress, Achievements, Settings, Lesson, Results, More }
+    private enum HubPage { Home, Galaxy, Armory, Progress, Achievements, Settings, Lesson, Results, More, Difficulty, Account }
     private bool menuOpen, studySession, studyResult, reducedMotion;
     private HubPage hubPage;
     private Phase studyReturnPhase;
     private int selectedLesson, practiceSkill, studyIndex, studyIndependent, studySupported, studyXp;
     private string typedAnswer = "";
     private Font academyFont;
+    private Vector2 lessonScroll;
     private GUIStyle hubTitle, hubCopy, hubLabel;
-    private static readonly string[] SkillNames = { "Addition", "Subtraction", "Multiplication", "Division" };
-    private static readonly string[] LevelNames = { "Level 1", "Level 2", "Level 3" };
     private Color LearnerAccent => LiveryEnergy(learningProfile.Accent);
 
     private void InitializeAcademyMenu()
@@ -52,8 +51,25 @@ public sealed partial class RuneholdGame
 
     private bool UpdateAcademyNavigation()
     {
+        if (menuOpen && hubPage == HubPage.Account)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (nicknamePrompt) nicknamePrompt = false;
+                else if (learningProfile.WelcomeComplete) NavigateHub(HubPage.Settings);
+                else nicknamePrompt = true;
+                return true;
+            }
+            if (Input.GetKeyDown(KeyCode.Return) && !guideOpen && !accountBusy)
+            {
+                if (nicknamePrompt) SaveNickname();
+                else if (!OnlineConfigured) nicknamePrompt = true;
+                else if (parentAccepted && !SignedIn) StartCoroutine(Authenticate());
+            }
+            return true;
+        }
         // Text-entry keys belong to IMGUI while its field owns keyboard focus.
-        if (menuOpen && hubPage == HubPage.Settings && menuNameEditing) return true;
+        if (menuOpen && (hubPage == HubPage.Account || hubPage == HubPage.Settings && menuNameEditing)) return true;
         if (Input.GetKeyDown(KeyCode.M) && !raidBriefOpen)
         {
             if (studySession) EndStudySession(false);
@@ -90,29 +106,15 @@ public sealed partial class RuneholdGame
             if (Input.GetKeyDown(KeyCode.Alpha1)) pilotJournal.MusicVolume = ToggleMenuVolume(pilotJournal.MusicVolume, ref menuMusicRestore);
             if (Input.GetKeyDown(KeyCode.Alpha2)) pilotJournal.SoundVolume = ToggleMenuVolume(pilotJournal.SoundVolume, ref menuEffectsRestore);
         }
-        if (hubPage == HubPage.Progress && profileTab == 1)
-        {
-            if (Input.GetKeyDown(KeyCode.F)) { showFactRecords = !showFactRecords; factPage = 0; }
-            if (showFactRecords && Input.GetKeyDown(KeyCode.RightArrow)) factPage = Mathf.Min(Mathf.Max(0, (learningProfile.Facts.Count - 1) / 4), factPage + 1);
-            if (showFactRecords && Input.GetKeyDown(KeyCode.LeftArrow)) factPage = Mathf.Max(0, factPage - 1);
-        }
-        if (hubPage == HubPage.Practice)
-        {
-            for (int i = 0; i < 4; i++)
-                if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i)))
-                { practiceSkill = i; selectedLesson = SkillLesson(i); NavigateHub(HubPage.Lesson); return true; }
-            int direction = Input.GetKeyDown(KeyCode.RightArrow) ? 1 : Input.GetKeyDown(KeyCode.LeftArrow) ? -1 : 0;
-            if (direction != 0) { learningProfile.PracticeDifficulty = (learningProfile.PracticeDifficulty + direction + 3) % 3; SaveLearningProfile(); }
-        }
         if (hubPage == HubPage.Galaxy)
         {
-            if (Input.GetKeyDown(KeyCode.RightArrow)) selectedLesson = (selectedLesson + 1) % 6;
-            if (Input.GetKeyDown(KeyCode.LeftArrow)) selectedLesson = (selectedLesson + 5) % 6;
+            if (Input.GetKeyDown(KeyCode.RightArrow)) selectedLesson = (selectedLesson + 1) % StarfallCurriculum.Names.Length;
+            if (Input.GetKeyDown(KeyCode.LeftArrow)) selectedLesson = (selectedLesson + StarfallCurriculum.Names.Length - 1) % StarfallCurriculum.Names.Length;
             if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.UpArrow)) selectedLesson = (selectedLesson + 3) % 6;
-            if (Input.GetKeyDown(KeyCode.Tab)) { NavigateHub(HubPage.Practice); return true; }
             if (Input.GetKeyDown(KeyCode.Return)) { NavigateHub(HubPage.Lesson); return true; }
         }
-        if (hubPage == HubPage.Lesson && Input.GetKeyDown(KeyCode.Return)) { StartStudySession(selectedLesson); return true; }
+        if (hubPage == HubPage.Lesson && Input.GetKeyDown(KeyCode.Return)) { NavigateHub(HubPage.Difficulty); return true; }
+        if (hubPage == HubPage.Difficulty && Input.GetKeyDown(KeyCode.Return)) { StartStudySession(selectedLesson); return true; }
         if (hubPage == HubPage.Progress && Input.GetKeyDown(KeyCode.Tab)) profileTab = (profileTab + 1) % 3;
         if (hubPage == HubPage.Achievements)
         {
@@ -136,13 +138,14 @@ public sealed partial class RuneholdGame
             case HubPage.Home: DrawHubHome(); break;
             case HubPage.More: DrawMoreMenu(); break;
             case HubPage.Galaxy: DrawGalaxyRoute(); break;
-            case HubPage.Practice: DrawPracticeLab(); break;
             case HubPage.Lesson: DrawLessonBrief(); break;
             case HubPage.Armory: DrawDefenderGuide(); break;
             case HubPage.Progress: DrawLearningProgress(); break;
             case HubPage.Achievements: DrawAchievements(); break;
             case HubPage.Settings: DrawLearningSettings(); break;
             case HubPage.Results: DrawStudyResults(); break;
+            case HubPage.Difficulty: DrawDifficultyChoice(); break;
+            case HubPage.Account: DrawAccountScreen(); break;
         }
         GUI.matrix = menuMatrix;
         menuNameEditing = hubPage == HubPage.Settings && GUI.GetNameOfFocusedControl() == "CadetName";
@@ -163,38 +166,25 @@ public sealed partial class RuneholdGame
     {
         HubHeading("Learn maths", "Choose a lesson.");
         DrawRouteNodes(240, false);
-        if (MenuLink("Quick practice  >", new Rect(494, 666, 546, 64), false, TextAnchor.MiddleCenter)) NavigateHub(HubPage.Practice);
     }
 
     private void DrawRouteNodes(float top, bool compact)
     {
-        for (int i = 0; i < 6; i++)
+        Rect view = new Rect(334, top, 866, 510);
+        lessonScroll = GUI.BeginScrollView(view, lessonScroll, new Rect(0, 0, 842, Mathf.Ceil(StarfallCurriculum.Names.Length / 3f) * 148), false, false, GUIStyle.none, GUIStyle.none);
+        for (int i = 0; i < StarfallCurriculum.Names.Length; i++)
         {
-            Rect card = new Rect(334 + i % 3 * 292, top + i / 3 * 182, 282, 150);
-            bool selected = i == selectedLesson; UiCard(card, Cyan, selected);
-            DrawElementSprite(new[] { 1, 2, 3, 0, 1, 2 }[i], new Vector2(card.center.x, card.y + 43), 44);
-            UiText(StarfallCurriculum.Names[i], new Rect(card.x + 16, card.y + 88, 250, 42), 24, true, UiInk, TextAnchor.MiddleCenter);
-            if (GUI.Button(card, GUIContent.none, GUIStyle.none)) { selectedLesson = i; PlayRelaySound(4, .5f); NavigateHub(HubPage.Lesson); }
+            Rect card = new Rect(i % 3 * 282, i / 3 * 148, 270, 134);
+            UiCard(card, Cyan, i == selectedLesson);
+            DrawElementSprite(i % 4, new Vector2(card.x + 40, card.y + 38), 42);
+            UiText(StarfallCurriculum.Names[i], new Rect(card.x + 75, card.y + 12, 183, 58), 23, true);
+            UiText(StarfallCurriculum.Example(i), new Rect(card.x + 16, card.y + 79, 238, 40), 23, false, UiBlue, TextAnchor.MiddleCenter);
+            if (GUI.Button(card, GUIContent.none, GUIStyle.none) && !ListScrollBlocked)
+            { selectedLesson = i; PlayRelaySound(4, .5f); NavigateHub(HubPage.Lesson); }
         }
+        GUI.EndScrollView(); DrawFriendlyScrollRail(view, ref lessonScroll, Mathf.Ceil(StarfallCurriculum.Names.Length / 3f) * 148);
+        HandleListDrag(ref lessonScroll, new Rect(view.x - 127, view.y, view.width, view.height), Mathf.Ceil(StarfallCurriculum.Names.Length / 3f) * 148);
     }
-
-    private void DrawPracticeLab()
-    {
-        HubHeading("Quick practice", "Choose a skill.");
-        for (int level = 0; level < 3; level++)
-            if (MenuTab(LevelNames[level], new Rect(334 + level * 292, 240, 282, 58), learningProfile.PracticeDifficulty == level))
-            { learningProfile.PracticeDifficulty = level; SaveLearningProfile(); }
-        string[] symbols = { "+", "−", "×", "÷" };
-        for (int i = 0; i < 4; i++)
-        {
-            Rect card = new Rect(334 + i % 2 * 442, 350 + i / 2 * 174, 424, 142); UiCard(card, Cyan);
-            UiText(symbols[i], new Rect(card.x + 24, card.y + 29, 62, 72), 50, true, UiBlue, TextAnchor.MiddleCenter);
-            UiText(SkillNames[i], new Rect(card.x + 112, card.y + 26, 288, 80), 28, true);
-            if (GUI.Button(card, GUIContent.none, GUIStyle.none)) { practiceSkill = i; selectedLesson = SkillLesson(i); NavigateHub(HubPage.Lesson); }
-        }
-    }
-
-    private static int SkillLesson(int skill) => skill < 2 ? skill : skill == 2 ? 3 : 4;
 
     private void DrawLessonBrief()
     {
@@ -206,8 +196,8 @@ public sealed partial class RuneholdGame
         StarfallQuestion example = StarfallCurriculum.CreateSkill(lesson, 0, 271 + lesson);
         UiCard(new Rect(334, 440, 866, 160), Gold);
         UiText("An example", new Rect(358, 451, 818, 36), 24, true);
-        UiText(example.Explanation, new Rect(358, 493, 818, 88), 26);
-        if (MenuButton("Try 5 puzzles", new Rect(334, 630, 415, 74), Cyan, true, true)) StartStudySession(lesson);
+        UiText(StarfallCurriculum.Example(lesson), new Rect(358, 493, 818, 88), 48, true, UiBlue, TextAnchor.MiddleCenter);
+        if (MenuButton("Choose difficulty", new Rect(334, 630, 415, 74), Cyan, true, true)) NavigateHub(HubPage.Difficulty);
         bool unlocked = lesson <= learningProfile.UnlockedLesson;
         if (MenuButton(unlocked ? "Use in my adventure" : "Space lesson locked", new Rect(767, 630, 433, 74), Gold, unlocked))
         { learningProfile.ActiveLesson = lesson; learningProfile.LessonSeen[lesson] = true; SaveLearningProfile(); ResumeExpedition(); }
@@ -292,7 +282,7 @@ public sealed partial class RuneholdGame
     {
         if (!studySession) return;
         phase = studyReturnPhase; studySession = false; studyResult = false;
-        menuOpen = true; NavigateHub(completed ? HubPage.Results : HubPage.Practice);
+        menuOpen = true; NavigateHub(completed ? HubPage.Results : HubPage.Galaxy);
         questionResolved = false; SaveLearningProfile(); SaveExpedition();
     }
 
@@ -305,7 +295,7 @@ public sealed partial class RuneholdGame
         UiText(studyIndependent + " worked out yourself", new Rect(364, 362, 570, 45), 27, true);
         UiText(studySupported + " learned together", new Rect(364, 420, 570, 45), 27, true);
         UiText("Today: " + Mathf.Min(5, learningProfile.DailySolved) + " of 5 puzzles · " + MenuCount(learningProfile.Stars, "learning star"), new Rect(364, 506, 806, 65), 24, false, UiMuted);
-        if (MenuButton("Try more puzzles", new Rect(334, 650, 415, 76), Cyan)) StartStudySession(selectedLesson);
+        if (MenuButton("Try more puzzles", new Rect(334, 650, 415, 76), Cyan)) NavigateHub(HubPage.Difficulty);
         if (MenuButton("Back to space", new Rect(767, 650, 433, 76), Gold, true, true)) ResumeExpedition();
         UiText("Learning with help counts too. Keep going at your own pace.", new Rect(334, 740, 866, 38), 20, false, UiMuted);
     }
@@ -326,7 +316,7 @@ public sealed partial class RuneholdGame
         StarfallQuestion example = StarfallCurriculum.CreateSkill(question.Lesson, 0, 271 + question.Lesson);
         UiRound(new Rect(64, 402, 726, 206), Hex("eaf4fc"));
         UiText("Try thinking about this", new Rect(86, 417, 680, 41), 25, true);
-        UiText(example.Explanation, new Rect(86, 475, 680, 112), 27);
+        UiText(StarfallCurriculum.Example(question.Lesson), new Rect(86, 475, 680, 112), 48, true, UiBlue, TextAnchor.MiddleCenter);
         DrawMenuPilot(new Vector2(1030, 369), 0, 2.5f);
         UiText("I'll wait while you think!", new Rect(867, 515, 337, 64), 26, true, UiBlue, TextAnchor.MiddleCenter);
         if (MenuButton("I'm ready to try", new Rect(32, 684, 790, 80), Cyan, true, true)) DismissQuestionIntro();

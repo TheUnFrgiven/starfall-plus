@@ -260,10 +260,10 @@ public sealed partial class RuneholdGame
     private void DrawPilotProfile()
     {
         HubHeading("Statistics", "Your adventure and learning.");
-        string[] tabs = { "My adventure", "My learning", "My week" };
+        string[] tabs = { "Learning", "Adventure", "My class" };
         for (int i = 0; i < 3; i++) if (MenuTab(tabs[i], new Rect(334 + i * 292, 240, 282, 58), profileTab == i)) profileTab = i;
-        if (profileTab == 1) { DrawFactProfile(); return; }
-        if (profileTab == 2) { DrawActivityProfile(); return; }
+        if (profileTab == 0) { DrawLearningDashboard(); return; }
+        if (profileTab == 2) { DrawCloudComparison(); return; }
         UiCard(new Rect(334, 320, 282, 390), Cyan); DrawMenuPilot(new Vector2(475, 473), 0, 2.1f);
         UiText(learningProfile.CadetName, new Rect(354, 594, 242, 45), 28, true, UiInk, TextAnchor.MiddleCenter);
         UiText("Pilot level " + astronautLevel, new Rect(354, 646, 242, 40), 23, false, UiBlue, TextAnchor.MiddleCenter);
@@ -276,37 +276,6 @@ public sealed partial class RuneholdGame
             UiText(labels[i], new Rect(card.x + 20, card.y + 73, 234, 36), 22);
         }
         UiText("Next goal: " + NextMilestone(), new Rect(334, 726, 866, 52), 22, false, UiMuted);
-    }
-
-    private void DrawFactProfile()
-    {
-        if (MenuButton(showFactRecords ? "See lesson totals" : "See puzzles to revisit", new Rect(334, 320, 866, 58), Cyan)) { showFactRecords = !showFactRecords; factPage = 0; }
-        if (!showFactRecords)
-        {
-            UiText(TotalLearning(true) + " solved yourself · " + TotalLearning(false) + " learned with help", new Rect(334, 393, 866, 37), 23, true);
-            for (int i = 0; i < 6; i++)
-            {
-                Rect row = new Rect(334, 444 + i * 49, 866, 43); UiRound(row, i % 2 == 0 ? Hex("e4edfa") : UiPaper, 8);
-                UiText(StarfallCurriculum.Names[i], new Rect(350, row.y, 430, row.height), 21, true);
-                UiText(learningProfile.Independent[i] + " yourself · " + learningProfile.Supported[i] + " together", new Rect(784, row.y, 400, row.height), 20, false, UiMuted, TextAnchor.MiddleRight);
-            }
-            return;
-        }
-        var facts = new List<StarfallFactRecord>(learningProfile.Facts);
-        facts.Sort((a, b) => StarfallCurriculum.ReviewWeight(b).CompareTo(StarfallCurriculum.ReviewWeight(a)));
-        if (facts.Count == 0) { UiText("Your first discovery is waiting. Try a puzzle to begin!", new Rect(358, 427, 818, 120), 30, true); if (MenuButton("Let's practise", new Rect(358, 585, 818, 76), Cyan, true, true)) NavigateHub(HubPage.Practice); return; }
-        int pages = Mathf.Max(1, (facts.Count + 3) / 4); factPage = Mathf.Clamp(factPage, 0, pages - 1);
-        for (int row = 0; row < 4 && factPage * 4 + row < facts.Count; row++)
-        {
-            StarfallFactRecord fact = facts[factPage * 4 + row]; Rect card = new Rect(334, 400 + row * 73, 866, 61); UiCard(card, Cyan);
-            string equation = fact.Key.Contains(":") ? fact.Key.Substring(fact.Key.IndexOf(':') + 1).Replace("*", " × ").Replace("/", " ÷ ").Replace("+", " + ").Replace("-", " − ") : fact.Key;
-            UiText(equation, new Rect(card.x + 18, card.y + 6, 300, 49), 27, true);
-            UiText(fact.Independent + " yourself · " + fact.Supported + " with help", new Rect(card.x + 330, card.y + 6, 346, 49), 20, false, UiMuted);
-            UiText(StarfallCurriculum.ReviewDue(fact) ? "Revisit" : "Growing!", new Rect(card.x + 684, card.y + 6, 164, 49), 22, true, UiBlue, TextAnchor.MiddleRight);
-        }
-        if (MenuButton("Previous", new Rect(334, 709, 230, 58), Cyan)) factPage = (factPage + pages - 1) % pages;
-        UiText((factPage + 1) + " of " + pages, new Rect(584, 709, 366, 58), 22, false, UiMuted, TextAnchor.MiddleCenter);
-        if (MenuButton("Next", new Rect(970, 709, 230, 58), Cyan)) factPage = (factPage + 1) % pages;
     }
 
     private void DrawActivityProfile()
