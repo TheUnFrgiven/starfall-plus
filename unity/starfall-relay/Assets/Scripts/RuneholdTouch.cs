@@ -32,7 +32,6 @@ public sealed partial class RuneholdGame
                 if (phase == Phase.Day && LaunchAction.Contains(at)) { RequestNightLaunch(); break; }
                 if (MenuAction.Contains(at)) { OpenAcademyMenu(HubPage.Home); break; }
             }
-            if (touch.phase == TouchPhase.Began && GuideHelpAction.Contains(at)) OpenContextHelp();
             if (moveFinger < 0 && touch.phase == TouchPhase.Began && (at - StickCenter).sqrMagnitude < 105 * 105) moveFinger = touch.fingerId;
             if (touch.fingerId != moveFinger) continue;
             found = true;

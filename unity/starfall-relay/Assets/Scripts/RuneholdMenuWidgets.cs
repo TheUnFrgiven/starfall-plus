@@ -62,11 +62,12 @@ public sealed partial class RuneholdGame
         bool hover = available && rect.Contains(Event.current.mousePosition);
         bool pressed = hover && Input.GetMouseButton(0);
         if (accent.maxColorComponent < .65f) accent = UiBlue;
-        Color face = !available ? Hex("e6ebf2") : selected ? UiBlue : Color.Lerp(accent, Color.white, hover ? .68f : .84f);
+        Color face = !available ? Hex("e6ebf2") : selected ? UiBlue : Color.Lerp(accent, Color.white, hover ? .78f : .94f);
         Color text = !available ? Hex("66758a") : selected ? Color.white : UiInk;
         Rect drawn = new Rect(rect.x, rect.y + (pressed ? 1 : 0), rect.width, rect.height);
-        PixelSurface(drawn, selected && available ? UiBlue : UiLine, 4);
-        PixelSurface(new Rect(drawn.x + 2, drawn.y + 2, drawn.width - 4, drawn.height - 4), face, 2);
+        PixelSurface(new Rect(drawn.x, drawn.y + 2, drawn.width, drawn.height), Hex("c7d5e2"), 6);
+        PixelSurface(drawn, selected && available ? Hex("205d96") : available ? Hex("829cb5") : UiLine, 6);
+        PixelSurface(new Rect(drawn.x + 2, drawn.y + 2, drawn.width - 4, drawn.height - 4), face, 4);
         GUIStyle type = UiStyle(rect.height >= 64 ? 23 : 19, text, true, TextAnchor.MiddleCenter);
         while (type.fontSize > 17 && type.CalcSize(new GUIContent(label)).x > rect.width - 24) type.fontSize--;
         GUI.Label(new Rect(drawn.x + 10, drawn.y + 2, drawn.width - 20, drawn.height - 4), label, type);

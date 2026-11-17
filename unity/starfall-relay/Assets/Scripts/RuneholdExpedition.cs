@@ -16,6 +16,8 @@ public sealed class StarfallPilotJournal
     public int Version = 1, Tokens, HighestNight, CleanDefenses, Builds, Salvage, Pulses;
     public string TrackingSince = "";
     public List<string> Achievements = new List<string>();
+    public int UnlockRules;
+    public List<string> ClaimedStages = new List<string>(), NotifiedStages = new List<string>();
     public List<int> Liveries = new List<int> { 0 };
     public List<StarfallActivityDay> Days = new List<StarfallActivityDay>();
     public int[] Setpoints = new int[6];
@@ -28,7 +30,7 @@ public sealed partial class RuneholdGame
 {
     private StarfallPilotJournal pilotJournal = new StarfallPilotJournal();
     private bool journalLoaded;
-    private int profileTab, collectionTab, achievementPage;
+    private int profileTab, collectionTab;
     private float achievementClock, pulseCharge = 35, pulseAge = 10, dashCooldown;
     private Vector2 pulseOrigin, lastMoveDirection = Vector2.down;
     private readonly List<CapacitorDrop> capacitors = new List<CapacitorDrop>();
@@ -44,15 +46,8 @@ public sealed partial class RuneholdGame
     private float nextShotSound;
     private sealed class CapacitorDrop { public Vector2 Position; public float Age; }
     private sealed class ExpeditionNotice { public string Title, Body; public Color Color; }
-    private static readonly string[] AchievementNames = { "First tower", "First night", "Five upgrades", "Use Blast",
-        "No damage", "1,000 meteors", "Learn with help", "Solve it yourself", "Five puzzles", "Five nights", "Level 18", "Power 60" };
-    private static readonly string[] AchievementCopy = { "Build your first meteor tower.", "Protect your ship through Night 1.", "Upgrade your tools 5 times.",
-        "Use Blast 3 times.", "Finish 3 nights without ship damage.", "Stop 1,000 meteors.",
-        "Work out 5 puzzles with help.", "Work out 10 puzzles yourself.", "Finish 5 maths puzzles in one day.",
-        "Protect your ship through Night 5.", "Reach pilot level 18.", "Reach astronaut power 60." };
-    private static readonly int[] AchievementRewards = { 1, 2, 1, 1, 2, 2, 1, 2, 1, 2, 2, 3 };
-    private static readonly string[] LiveryNames = { "Orange", "Green", "Purple", "Gold" };
-    private static readonly int[] LiveryPrices = { 0, 2, 4, 6 };
+    private static readonly string[] LiveryNames = StarfallCosmetics.Names;
+    private static readonly int[] LiveryPrices = StarfallCosmetics.Prices;
     private string JournalPath => Path.Combine(Application.persistentDataPath, "starfall-pilot-v1.json");
     private static string LocalDay => DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
     private int InstalledRanks => turretCount + shieldLevels + salvageLevels + turretMastery + shieldMastery + salvageMastery + rifleLevels + droneLevels + regenerationLevels;
@@ -78,6 +73,7 @@ public sealed partial class RuneholdGame
         for (int i = 1; i < 4; i++)
             if ((migrateLegacyColors && learningProfile.Stars >= legacyStars[i] || learningProfile.Accent == i) && !pilotJournal.Liveries.Contains(i)) pilotJournal.Liveries.Add(i);
         if (!pilotJournal.Liveries.Contains(learningProfile.Accent)) learningProfile.Accent = 0;
+        StarfallUnlocks.Migrate(pilotJournal);
         journalLoaded = true;
         InitializeRelayAudio();
         InitializeRelayMusic();
@@ -157,27 +153,40 @@ public sealed partial class RuneholdGame
             default: return AscensionPower;
         }
     }
-    private static int AchievementTarget(int i) => new[] { 1, 1, 5, 3, 3, 1000, 5, 10, 1, 5, 18, 60 }[i];
-    private string AchievementId(int i) => "relay-" + i;
+    private int UnlockValue(StarfallUnlockTrack track, int stage)
+        => track.Metric == 0 && stage > 0 ? InstalledRanks : AchievementValue(track.Metric);
+
     private void RefreshAchievements()
     {
         if (!journalLoaded) return;
         bool changed = false;
-        for (int i = 0; i < AchievementNames.Length; i++)
+        foreach (StarfallUnlockTrack track in StarfallUnlocks.Tracks)
         {
-            if (AchievementValue(i) < AchievementTarget(i) || pilotJournal.Achievements.Contains(AchievementId(i))) continue;
-            pilotJournal.Achievements.Add(AchievementId(i)); pilotJournal.Tokens += AchievementRewards[i]; changed = true;
-            Announce("ACHIEVEMENT · " + AchievementNames[i], "+" + AchievementRewards[i] + (AchievementRewards[i] == 1 ? " color credit. " : " color credits. ") + "Open Collection to choose a livery.", Gold);
+            int stage = StarfallUnlocks.Stage(pilotJournal, track);
+            if (stage >= track.Targets.Length || UnlockValue(track, stage) < track.Targets[stage] || pilotJournal.NotifiedStages.Contains(track.Key(stage))) continue;
+            pilotJournal.NotifiedStages.Add(track.Key(stage)); changed = true;
+            Announce("Reward ready", track.Goal(stage) + ". Claim it in Collection > Unlockables.", Gold);
         }
         if (changed) SavePilotJournal();
     }
 
+    private void ClaimUnlock(int index)
+    {
+        StarfallUnlockTrack track = StarfallUnlocks.Tracks[index];
+        int stage = StarfallUnlocks.Stage(pilotJournal, track);
+        if (stage >= track.Targets.Length || !StarfallUnlocks.Claim(pilotJournal, track, UnlockValue(track, stage))) return;
+        collectedTrack = index; collectedTrackUntil = Time.unscaledTime + 4;
+        PlayRelaySound(2); RefreshAchievements(); SavePilotJournal();
+    }
+
     private string NextMilestone()
     {
-        for (int i = 0; i < AchievementNames.Length; i++)
-            if (!pilotJournal.Achievements.Contains(AchievementId(i)))
-                return AchievementNames[i] + " · " + Mathf.Min(AchievementTarget(i), AchievementValue(i)) + "/" + AchievementTarget(i);
-        return "All launch milestones earned. Keep growing your expedition.";
+        foreach (StarfallUnlockTrack track in StarfallUnlocks.Tracks)
+        {
+            int stage = StarfallUnlocks.Stage(pilotJournal, track);
+            if (stage < track.Targets.Length) return track.Goal(stage) + " · " + Mathf.Min(track.Targets[stage], UnlockValue(track, stage)) + "/" + track.Targets[stage];
+        }
+        return "All goals completed. Keep exploring!";
     }
 
     private void RecordEngineeringBuilt()
@@ -210,8 +219,8 @@ public sealed partial class RuneholdGame
         RefreshAchievements(); SavePilotJournal();
     }
 
-    private Color LiveryEnergy(int index) => index == 1 ? Mint : index == 2 ? Hex("c2a0ff") : index == 3 ? Gold : Cyan;
-    private Color LiveryArmor(int index) => index == 1 ? Hex("58b990") : index == 2 ? Hex("9872dc") : index == 3 ? Hex("edb34d") : Ember;
+    private Color LiveryEnergy(int index) => Hex(StarfallCosmetics.Energy[Mathf.Clamp(index, 0, StarfallCosmetics.Count - 1)]);
+    private Color LiveryArmor(int index) => Hex(StarfallCosmetics.Armor[Mathf.Clamp(index, 0, StarfallCosmetics.Count - 1)]);
 
     private void ApplyLivery()
     {
@@ -237,6 +246,7 @@ public sealed partial class RuneholdGame
 
     private void EquipLivery(int index)
     {
+        if (index < 0 || index >= StarfallCosmetics.Count) return;
         if (!pilotJournal.Liveries.Contains(index))
         {
             if (pilotJournal.Tokens < LiveryPrices[index]) return;
@@ -249,7 +259,7 @@ public sealed partial class RuneholdGame
 
     private void DrawPilotProfile()
     {
-        HubHeading("Your explorer story", "Every puzzle and every adventure adds something new.");
+        HubHeading("Statistics", "Your adventure and learning.");
         string[] tabs = { "My adventure", "My learning", "My week" };
         for (int i = 0; i < 3; i++) if (MenuTab(tabs[i], new Rect(334 + i * 292, 240, 282, 58), profileTab == i)) profileTab = i;
         if (profileTab == 1) { DrawFactProfile(); return; }
@@ -265,7 +275,7 @@ public sealed partial class RuneholdGame
             UiText(values[i].ToString(), new Rect(card.x + 20, card.y + 9, 234, 55), 38, true, UiBlue);
             UiText(labels[i], new Rect(card.x + 20, card.y + 73, 234, 36), 22);
         }
-        UiText("Next badge: " + NextMilestone(), new Rect(334, 726, 866, 52), 22, false, UiMuted);
+        UiText("Next goal: " + NextMilestone(), new Rect(334, 726, 866, 52), 22, false, UiMuted);
     }
 
     private void DrawFactProfile()

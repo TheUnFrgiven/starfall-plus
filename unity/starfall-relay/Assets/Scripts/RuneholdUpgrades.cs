@@ -205,7 +205,6 @@ public sealed partial class RuneholdGame
             UiText(turretMasteryPurchase ? "This upgrade makes every installed tower stronger." : "A new tower protects another part of your ship.", new Rect(555, 697, 435, 68), 23, false, UiMuted);
         }
         else UiText("Maths powers every upgrade. Asking for help is always welcome.", new Rect(32, 699, 955, 64), 23, false, UiMuted, TextAnchor.MiddleCenter);
-        DrawAskHelp(new Rect(1008, 699, 240, 64));
     }
 
     private void DrawUpgradeRow(Upgrade upgrade, int y)

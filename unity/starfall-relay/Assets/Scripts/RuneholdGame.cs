@@ -199,6 +199,7 @@ public sealed partial class RuneholdGame : MonoBehaviour
         corePulse += dt;
         UpdateExpeditionPresentation(dt);
         UpdateRelayMusic(dt);
+        if (UpdateFloatingBot(dt)) return;
         UpdateTouchMovement();
         worldCamera = Vector2.Lerp(worldCamera, pilotPosition + new Vector2(0, -65), 1 - Mathf.Exp(-dt * 5));
         if (UpdateGuide()) return;
@@ -507,6 +508,7 @@ public sealed partial class RuneholdGame : MonoBehaviour
 
     private void OnGUI()
     {
+        ConsumeBotPointer();
         Rect safe = Screen.safeArea;
         float scale = Mathf.Min(safe.width / DesignWidth, safe.height / DesignHeight);
         float offsetX = safe.x + (safe.width - DesignWidth * scale) * .5f;
@@ -517,7 +519,7 @@ public sealed partial class RuneholdGame : MonoBehaviour
         GUI.enabled = originalEnabled && !guideOpen;
         GUI.matrix = Matrix4x4.TRS(new Vector3(offsetX, offsetY, 0), Quaternion.identity, new Vector3(scale, scale, 1));
         InitStyles();
-        if (menuOpen && phase != Phase.Quiz) { DrawAcademyMenu(); DrawExpeditionNotice(); GUI.enabled = originalEnabled; DrawGuideDialogue(); GUI.matrix = previous; return; }
+        if (menuOpen && phase != Phase.Quiz) { DrawAcademyMenu(); DrawExpeditionNotice(); GUI.enabled = originalEnabled; DrawFloatingBot(); DrawGuideDialogue(); GUI.matrix = previous; return; }
         Matrix4x4 interfaceMatrix = GUI.matrix;
         bool controlsEnabled = originalEnabled;
         bool fieldBlocked = guideOpen || raidBriefOpen || pauseOpen || buildPanelOpen || learningPanelOpen ||
@@ -555,8 +557,8 @@ public sealed partial class RuneholdGame : MonoBehaviour
         DrawExpeditionNotice();
         GUI.enabled = controlsEnabled && !guideOpen;
         if (raidBriefOpen) DrawRaidBriefing();
-        if (!guideOpen && !buildPanelOpen && phase != Phase.Quiz && (raidBriefOpen || pauseOpen || phase == Phase.UpgradeReveal || phase == Phase.Dawn || phase == Phase.Warning || phase == Phase.Defeat || phase == Phase.Victory)) DrawAskHelp(new Rect(1040, 20, 208, 58));
         GUI.enabled = controlsEnabled;
+        DrawFloatingBot();
         DrawGuideDialogue();
         GUI.matrix = previous;
     }
@@ -660,7 +662,6 @@ public sealed partial class RuneholdGame : MonoBehaviour
         {
             UiRound(new Rect(0, 682, 1280, 118), UiPaper, 0); Fill(0, 682, 1280, 2, UiLine);
             bool day = phase == Phase.Day;
-            DrawGuideFooter();
             if (day)
             {
                 if (MenuButton("Build & upgrade", BuildAction, Cyan, true, true)) OpenEquipmentBay(RecommendedUpgrade);

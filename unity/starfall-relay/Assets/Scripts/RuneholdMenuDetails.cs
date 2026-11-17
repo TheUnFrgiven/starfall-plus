@@ -75,41 +75,5 @@ public sealed partial class RuneholdGame
         return Mathf.Clamp01(value);
     }
 
-    private void DrawPolishedCollection()
-    {
-        HubHeading("Look how far you've come!", "Earn rewards by exploring and learning. Pick colors for your astronaut.");
-        if (MenuTab("My badges", new Rect(334, 240, 282, 58), collectionTab == 0)) collectionTab = 0;
-        if (MenuTab("My colors", new Rect(634, 240, 282, 58), collectionTab == 1)) collectionTab = 1;
-        UiText(MenuCount(pilotJournal.Tokens, "color credit"), new Rect(934, 240, 266, 58), 23, true, UiBlue, TextAnchor.MiddleRight);
-        if (collectionTab == 0)
-        {
-            achievementPage = Mathf.Clamp(achievementPage, 0, 2);
-            for (int row = 0; row < 4; row++)
-            {
-                int i = achievementPage * 4 + row; Rect card = new Rect(334, 320 + row * 89, 866, 77);
-                bool earned = pilotJournal.Achievements.Contains(AchievementId(i)); UiCard(card, earned ? Gold : Cyan);
-                DrawAchievementMedal(i, new Vector2(card.x + 38, card.y + 39), earned);
-                UiText(AchievementNames[i], new Rect(card.x + 75, card.y + 6, 610, 31), 24, true);
-                UiText(AchievementCopy[i], new Rect(card.x + 75, card.y + 42, 610, 29), 19, false, UiMuted);
-                UiText(earned ? "Earned!" : Mathf.Min(AchievementValue(i), AchievementTarget(i)) + " / " + AchievementTarget(i), new Rect(card.x + 690, card.y + 9, 156, 30), 21, true, UiBlue, TextAnchor.MiddleRight);
-                UiText("+" + MenuCount(AchievementRewards[i], "credit"), new Rect(card.x + 690, card.y + 44, 156, 25), 18, false, UiMuted, TextAnchor.MiddleRight);
-            }
-            if (MenuButton("Previous", new Rect(334, 704, 230, 58), Cyan)) achievementPage = (achievementPage + 2) % 3;
-            UiText("Badges " + (achievementPage + 1) + " of 3", new Rect(584, 704, 366, 58), 22, false, UiMuted, TextAnchor.MiddleCenter);
-            if (MenuButton("Next", new Rect(970, 704, 230, 58), Cyan)) achievementPage = (achievementPage + 1) % 3;
-            return;
-        }
-        for (int i = 0; i < 4; i++)
-        {
-            Rect card = new Rect(334 + i % 2 * 442, 320 + i / 2 * 204, 424, 190);
-            bool owned = pilotJournal.Liveries.Contains(i), equipped = learningProfile.Accent == i, canUnlock = pilotJournal.Tokens >= LiveryPrices[i];
-            UiCard(card, LiveryEnergy(i), equipped); DrawLiveryPortrait(i, new Vector2(card.x + 64, card.y + 98), 125);
-            string[] names = { "Orange", "Green", "Purple", "Gold" };
-            UiText(names[i], new Rect(card.x + 132, card.y + 15, 272, 37), 26, true);
-            UiText("Astronaut, tools and lights", new Rect(card.x + 132, card.y + 63, 272, 53), 20, false, UiMuted);
-            string action = equipped ? "Wearing these!" : owned ? "Wear these colors" : canUnlock ? "Unlock · " + LiveryPrices[i] + " credits" : "Need " + MenuCount(LiveryPrices[i] - pilotJournal.Tokens, "credit");
-            if (MenuButton(action, new Rect(card.x + 132, card.y + 126, 272, 50), LiveryEnergy(i), !equipped && (owned || canUnlock), equipped)) EquipLivery(i);
-        }
-        UiText("New badges and daily maths earn color credits. Earned colors stay yours.", new Rect(334, 737, 866, 40), 20, false, UiMuted);
-    }
+    private void DrawPolishedCollection() => DrawUnlockCollection();
 }

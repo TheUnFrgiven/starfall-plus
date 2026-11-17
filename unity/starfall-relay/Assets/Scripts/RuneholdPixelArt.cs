@@ -181,6 +181,5 @@ public sealed partial class RuneholdGame
         else if (index == 3) DrawEnergyCell(at, 27, Cyan);
         else if (index == 10) DrawTrimmedSprite(pilotTexture, pilotFrames[0], at, 39, Color.white);
         else DrawPixelIcon(index == 7 ? 1 : 5, at - Vector2.one * 13, 3.2f, earned ? Hex("c18b2e") : UiBlue);
-        if (earned) PixelSpark(at + new Vector2(20, -20), 10, Gold);
     }
 }

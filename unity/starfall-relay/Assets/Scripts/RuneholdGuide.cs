@@ -3,7 +3,6 @@ using UnityEngine;
 
 public sealed partial class RuneholdGame
 {
-    private static readonly Rect GuideHelpAction = new Rect(250, 702, 420, 72);
     private bool guideOpen, guideIsTutorial;
     private string[] guidePages = Array.Empty<string>();
     private int guidePage, guideSalvageBaseline, guideBuildBaseline, guideStartNight;
@@ -24,6 +23,7 @@ public sealed partial class RuneholdGame
         guidePages = pages; guidePage = 0; guideFinished = finished;
         guideIsTutorial = tutorial; guideOpen = true;
         touchMove = Vector2.zero; touchBoost = touchNova = false; pilotWalking = false;
+        collectionDrag = collectionDragged = false;
     }
 
     private void FinishBot()
@@ -59,7 +59,7 @@ public sealed partial class RuneholdGame
         switch (learningProfile.GuideStep)
         {
             case 0:
-                TutorialBot(1, "Hi! I'm Bot. I'll explain your ship, your tools and the maths. You stay in control of the astronaut.",
+                TutorialBot(1, "Hi! I'm Bot, your floating guide. Tap me whenever you need help with your ship, tools or maths. You stay in control of the astronaut.",
                     "Drag the Move stick to walk. Your Blaster aims and shoots by itself. Try walking a little now."); break;
             case 1:
                 if (Vector2.Distance(pilotPosition, guideMoveOrigin) >= 90)
@@ -96,7 +96,7 @@ public sealed partial class RuneholdGame
                 if (phase == Phase.Dawn || night > guideStartNight)
                     TutorialBot(9, "You made it! Collect the supplies. Your tools and learning stay with you. Health gains only 10; Shield recharges before the next night.",
                         "The next upgrades cost more, and later lessons use new maths. Choose what to buy rather than spending everything at once.",
-                        "You can practise in Learn maths, see your progress and earn colors. My tutorial is finished. Tap Ask for help any time you need me.");
+                        "You can practise in Learn maths, see your progress and earn colors. My tutorial is finished. Tap the floating Bot any time you need me.");
                 break;
         }
         return guideOpen;
@@ -112,6 +112,18 @@ public sealed partial class RuneholdGame
     private void OpenContextHelp()
     {
         if (guideOpen) return;
+        if (menuOpen && phase != Phase.Quiz)
+        {
+            if (hubPage == HubPage.Achievements)
+                OpenBot(collectionTab == 0 ? new[] { "These goals are progression tracks. Scroll to see them all. When a goal is ready, collect its credits. That same card then shows your next goal.", "For example: survive 1 night, collect the reward, then work toward 5 nights. Your progress and claimed rewards are saved." }
+                    : new[] { "Scroll to see all eight colors. Earn color credits from goals and daily practice. Unlock a color once, then wear it whenever you like. Your astronaut, tools and lights will match." });
+            else if (hubPage == HubPage.More) OpenBot(new[] { "Collection holds Unlockables, Statistics and Tools. Unlockables has your goals and colors. Statistics tracks your adventure and maths. Tools explains what each upgrade does." });
+            else if (hubPage == HubPage.Armory) OpenBot(new[] { "Tower and Blaster shoot meteors. Shield protects Health. Collector gives more resources. Drones help attack, and Repair slowly heals during a night.", "Choose upgrades from Build & upgrade on your ship. This page explains their jobs." });
+            else if (hubPage == HubPage.Progress) OpenBot(new[] { "Statistics shows your adventure, learning and activity. The tabs let you see what you have achieved and which maths to revisit." });
+            else if (hubPage == HubPage.Settings) OpenBot(new[] { "Choose your name, sound, answer style and calmer motion here. Calmer motion also keeps me still so I am easier to tap." });
+            else OpenBot(new[] { "Play returns to the ship. Learn maths has lessons and practice. Collection holds Unlockables, Statistics and Tools.", "I am Bot. I float nearby on every screen. Tap me when you need an explanation; I pause when you point at me." });
+            return;
+        }
         if (phase == Phase.Quiz)
         {
             OpenBot(new[] { "Read the maths sign first. " + StarfallCurriculum.Teachings[question.Lesson],
@@ -129,26 +141,9 @@ public sealed partial class RuneholdGame
         if (phase == Phase.Defeat)
         { OpenBot(new[] { "You can prepare and try this night again. Your tools and completed maths are kept. The retry starts with the Health you had before this shower, not a free full heal.",
             "A stronger Shield can absorb more hits next time. You can also improve Tower, Blaster or Drones to stop meteors sooner." }); return; }
-        if (menuOpen)
-        { OpenBot(new[] { "Play returns to the ship. Learn maths has lessons and practice. My stuff holds your rewards, colors, progress and space tools.",
-            "Play whenever you are ready. If you are learning the controls, I will guide you on the ship. Ask for help works here and during the game." }); return; }
         OpenBot(new[] { "You move the astronaut yourself with the stick. Walk over Metal and Crystal to collect them. Tap a building's sign or Build & upgrade to inspect tools.",
             "Tower shoots. Shield protects. Collector gathers more. Blaster and Drones attack. Repair heals Health during a night.",
             "Health carries over with only 10 restored at dawn. Shield recharges before each night. Spend resources on the protection and power you need next." });
-    }
-
-    private void DrawAskHelp(Rect rect)
-    {
-        if (MenuButton("Ask for help", rect, Cyan)) OpenContextHelp();
-    }
-
-    private void DrawGuideFooter()
-    {
-        UiCard(GuideHelpAction, Cyan);
-        DrawBotPortrait(new Rect(263, 710, 52, 55));
-        UiText("Ask for help", new Rect(326, 710, 323, 31), 23, true);
-        UiText("Bot can explain", new Rect(326, 747, 323, 22), 18, false, UiMuted);
-        if (GUI.Button(GuideHelpAction, GUIContent.none, GUIStyle.none)) OpenContextHelp();
     }
 
     private void DrawBotPortrait(Rect box)
@@ -161,8 +156,8 @@ public sealed partial class RuneholdGame
     {
         if (!FieldControlsAvailable || learningProfile.GuideVersion >= 1) return;
         string[] tasks = { "Meet Bot", "Try moving", "Collect a resource", "Open Build & upgrade", "Choose an upgrade", "Finish the puzzle", "Prepare for night", "Start the shower", "Protect the ship", "Tutorial complete" };
-        UiCard(new Rect(24, 112, 316, 82), Cyan); DrawBotPortrait(new Rect(36, 125, 49, 56));
-        UiText(tasks[Mathf.Clamp(learningProfile.GuideStep, 0, 9)], new Rect(99, 125, 226, 55), 22, true);
+        UiCard(new Rect(24, 112, 280, 65), Cyan);
+        UiText(tasks[Mathf.Clamp(learningProfile.GuideStep, 0, 9)], new Rect(40, 121, 248, 47), 22, true);
     }
 
     private void DrawGuideDialogue()

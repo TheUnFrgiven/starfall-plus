@@ -9,7 +9,6 @@ public sealed partial class RuneholdGame
     private Phase studyReturnPhase;
     private int selectedLesson, practiceSkill, studyIndex, studyIndependent, studySupported, studyXp;
     private string typedAnswer = "";
-    private bool showWeaponPoses;
     private Font academyFont;
     private GUIStyle hubTitle, hubCopy, hubLabel;
     private static readonly string[] SkillNames = { "Addition", "Subtraction", "Multiplication", "Division" };
@@ -114,13 +113,11 @@ public sealed partial class RuneholdGame
             if (Input.GetKeyDown(KeyCode.Return)) { NavigateHub(HubPage.Lesson); return true; }
         }
         if (hubPage == HubPage.Lesson && Input.GetKeyDown(KeyCode.Return)) { StartStudySession(selectedLesson); return true; }
-        if (hubPage == HubPage.Armory && Input.GetKeyDown(KeyCode.Space)) showWeaponPoses = !showWeaponPoses;
         if (hubPage == HubPage.Progress && Input.GetKeyDown(KeyCode.Tab)) profileTab = (profileTab + 1) % 3;
-        if (hubPage == HubPage.Achievements && Input.GetKeyDown(KeyCode.Tab)) collectionTab = 1 - collectionTab;
-        if (hubPage == HubPage.Achievements && collectionTab == 0 && (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))) achievementPage = (achievementPage + (Input.GetKeyDown(KeyCode.LeftArrow) ? 2 : 1)) % 3;
-        if (hubPage == HubPage.Achievements && collectionTab == 1)
-            for (int i = 0; i < 4; i++)
-                if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i))) EquipLivery(i);
+        if (hubPage == HubPage.Achievements)
+        {
+            UpdateCollectionNavigation();
+        }
         if (hubPage == HubPage.Results && Input.GetKeyDown(KeyCode.Return)) { ResumeExpedition(); return true; }
         return true;
     }
@@ -219,22 +216,14 @@ public sealed partial class RuneholdGame
 
     private void DrawDefenderGuide()
     {
-        HubHeading("Your space tools", "Collect resources. Solve an energy puzzle. Make a helpful upgrade.");
-        if (showWeaponPoses)
-        {
-            UiCard(new Rect(334, 240, 866, 425), Cyan);
-            float[] angles = { 0, -90, 180, 90 }; string[] labels = { "Right", "Up", "Left", "Down" };
-            for (int i = 0; i < 4; i++) { DrawMenuPilot(new Vector2(440 + i * 214, 422), angles[i], 1.9f); UiText(labels[i], new Rect(350 + i * 214, 546, 180, 46), 24, true, UiInk, TextAnchor.MiddleCenter); }
-            UiText("Your blaster aims and shoots automatically.", new Rect(358, 606, 818, 40), 24, false, UiMuted);
-        }
-        else for (int i = 0; i < 6; i++)
+        HubHeading("Tools", "What each tool does.");
+        for (int i = 0; i < 6; i++)
         {
             Upgrade kind = (Upgrade)i; Rect card = new Rect(334 + i % 3 * 292, 240 + i / 3 * 228, 282, 210);
             UiCard(card, UpgradeColor(kind)); DrawMenuEquipmentArt(kind, new Vector2(card.x + 49, card.y + 48), 60);
             UiText(FriendlyUpgrade(kind), new Rect(card.x + 94, card.y + 14, 172, 68), 24, true);
             UiText(FriendlyBenefit(kind), new Rect(card.x + 18, card.y + 99, 246, 96), 20, false, UiMuted);
         }
-        if (MenuButton(showWeaponPoses ? "Back to my tools" : "See my space blaster", new Rect(334, 708, 866, 58), Cyan)) showWeaponPoses = !showWeaponPoses;
     }
 
     private void DrawLearningProgress()

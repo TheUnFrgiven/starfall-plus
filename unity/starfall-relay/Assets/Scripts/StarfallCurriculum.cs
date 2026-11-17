@@ -33,7 +33,7 @@ public sealed class StarfallLearningProfile
         Array.Resize(ref Wins, StarfallCurriculum.Names.Length);
         Array.Resize(ref LessonSeen, StarfallCurriculum.Names.Length);
         PracticeDifficulty = Math.Max(0, Math.Min(2, PracticeDifficulty));
-        Accent = Math.Max(0, Math.Min(3, Accent));
+        Accent = Math.Max(0, Math.Min(StarfallCosmetics.Count - 1, Accent));
         Stars = Math.Max(0, Stars); LearningXp = Math.Max(0, LearningXp); DailySolved = Math.Max(0, DailySolved);
         if (string.IsNullOrWhiteSpace(CadetName)) CadetName = "Aria";
         if (CadetName.Length > 20) CadetName = CadetName.Substring(0, 20);

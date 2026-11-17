@@ -1,8 +1,10 @@
 # Starfall Relay
 
-## Minimal menus
+## Collection and floating Bot — 17 November 2026
 
-Home now shows Play, Learn maths, My stuff and Settings. Rewards, progress and equipment sit under My stuff; secondary screens use Back instead of a permanent sidebar. Shared controls have quieter borders and more whitespace. See [the menu structure](Docs/minimal-menu.md).
+Home keeps four clear, shaped actions: Play, Learn maths, Collection and Settings. A small elemental illustration adds color around the astronaut. Collection contains Unlockables, Statistics and Tools. A slowly floating, tappable Bot replaces fixed help buttons and explains the current screen; calmer motion keeps it still.
+
+Unlockables has a continuous scrolling goal list and eight astronaut colors. Related goals advance on the same card after collecting their reward, such as surviving 1, 5, 10, 20 and 40 nights. Existing credits, colors and paid achievements are preserved. Blue, Pink, Red and Teal join the original four colors. The redundant Blaster showcase and medal sparkle are removed. See [the implementation and checks](Docs/collection-and-floating-bot.md).
 
 ## Unified pixel artwork — 13 November 2026
 
@@ -16,7 +18,7 @@ The UI now separates clean, smooth controls from the pixel artwork: larger type 
 
 ## Bot and persistent Health — 11 November 2026
 
-Move the astronaut yourself. Small fixed map signs identify Tower, Shield, Collector and resources. Bot teaches the controls and systems through short conversations; **Ask for help** opens an explanation for the current screen. Automatic resource routing has been removed.
+Move the astronaut yourself. Small fixed map signs identify Tower, Shield, Collector and resources. Bot teaches the controls and systems through short conversations; tap the floating robot for an explanation of the current screen. Automatic resource routing has been removed.
 
 Health carries through rounds, with at most 10 restored at dawn. Shield absorbs hits before Health and recharges before each night. Buying Shield upgrades its protection rather than healing Health. The sky covers the full window without repeating a cropped image strip. See [bot-guide-and-shield.md](Docs/bot-guide-and-shield.md) and the separate [maths logic for review](Docs/math-logic-review.md).
 
