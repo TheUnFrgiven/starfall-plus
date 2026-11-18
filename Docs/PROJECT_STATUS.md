@@ -1,6 +1,6 @@
-# Starfall+ baseline status
+# Starfall+ project status
 
-Updated 17 November 2026. This is the current status record; dated reports in `history/` are historical evidence, not current deployment claims.
+Updated 18 November 2026. This is the current status record; dated reports in `history/` are historical evidence, not current deployment claims.
 
 ## Included
 
@@ -12,13 +12,13 @@ Supabase account/learner/classroom/assignment/attempt/challenge storage and auth
 
 ## Still open
 
-1. Configure Google OAuth and register/test native callbacks on exported platforms.
+1. Configure Google OAuth and test native callback flows. Android now registers the allow-listed callback in its exported manifest; this does not establish a working Google sign-in flow.
 2. Run a regular saved build through real answers → upload → parent dashboard, plus teacher assignments/access/revocation and multiple-account comparisons. Preview intentionally does not upload gameplay events.
 3. Verify password recovery, account credential edits and nickname edits end to end.
 4. Deploy the committed clearer gateway email-error mapping. The previous browser deployment attempt failed; the original working account service remains deployed.
 5. Durable offline attempt queues and full cross-device ship/cosmetic restore. Current retries last only for the session; ship/cosmetic saves are device-local.
 6. Decide upgrade simplifications and maths tied to actual resource budgets. Existing six mechanics remain unchanged.
-7. Install Android/iOS Unity modules, export, register callbacks and test real-device touch, layout, lifecycle and performance.
+7. Test the Android APK on real phones: touch, keyboard, layout, accounts, lifecycle and performance. Install/export iOS separately; iOS is still pending.
 8. Sustained night/economy balance, full asset/animation/readability review and playtesting with the target age group.
 
 ## Baseline validation
@@ -31,8 +31,16 @@ The renamed base adds checks for product identity, scene and non-destructive leg
 
 Save filenames/schema versions, account IDs, database schema and the existing hosted dashboard URL are stable contracts. They are not rewritten to rename the product. Desktop legacy game JSON files copy once into the new app directory without replacing existing progress or deleting originals. Old browser/Godot saves and OS-level legacy preference/high-score storage are not imported. In-memory account sessions require signing in again.
 
-The actual public client configuration is ignored. A fresh clone uses the example template. SMTP/Google secrets belong only in the hosting control plane. Google and mobile release remain pending; this is a checkpointed development base.
+The actual public client configuration is ignored. A fresh clone uses the example template. SMTP/Google secrets belong only in the hosting control plane. Google, iOS and a production mobile-store release remain pending; Android is currently a development playtest APK.
 
 ## Rebrand verification
 
-The Starfall+ identity and save-migration checks, 21,000-question checks, PostgreSQL/backend tests, Deno check and both renamed Mac builds passed. The dashboard returns HTTP 200 with its Starfall+ title on both new and legacy domains. The Supabase project label and Auth redirect settings use the new brand; both gateway origins are supported. The SMTP display-name save was submitted, but its persistence needs a later check because the hosted settings page became blank on reload. Credentials were not changed. Native/mobile callback completion is still pending.
+The Starfall+ identity and save-migration checks, 21,000-question checks, PostgreSQL/backend tests, Deno check and both renamed Mac builds passed. The dashboard returns HTTP 200 with its Starfall+ title on both new and legacy domains. The Supabase project label and Auth redirect settings use the new brand; both gateway origins are supported. The SMTP display-name save was submitted, but its persistence needs a later check because the hosted settings page became blank on reload. Credentials were not changed. The Android callback is now registered; real native account flows and other mobile platforms remain pending.
+
+## Android 0.1.1 playtest
+
+The normal saved-game APK built successfully with Unity 6000.6.7f1 and its official Android support, Java 17, NDK r27c and SDK tools. The APK is 49,581,248 bytes, uses `com.starfallplus.game`, version code 2, minimum API 26, target API 36 and both ARMv7/ARM64. Its generated manifest requires OpenGL ES 3.1, landscape, Internet access and the native account callback. APK v2 signing, non-debuggable status, ZIP alignment and all six ARM64 libraries' 16 KB LOAD alignment passed inspection.
+
+Android configuration/callback/interrupted-input checks and the 21,000 learning checks passed. Interrupted mobile play clears held touch input, pauses combat and saves learning/expedition progress. The existing pixel-art textures remain uncompressed with their original GUIDs. The launcher uses the Bot with a pale background and padded adaptive foreground; exported icon layers were visually inspected.
+
+No physical phone or emulator gameplay session was run. Accounts, touch usability, keyboard behavior, swarms and heat/frame rate still need real-device playtesting. Desktop fixtures and APK inspection are separate from these pending results. See [Android testing](ANDROID_TESTING.md).

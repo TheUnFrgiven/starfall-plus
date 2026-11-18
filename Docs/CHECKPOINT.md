@@ -26,3 +26,9 @@ GitHub release notes list the validation results and any supplied Mac build. Sou
 ## Completed baseline validation
 
 The renamed identity/save migration checks and all 21,000 learning checks passed. Backend PostgreSQL tests and Deno checks passed. Both Starfall+ Mac builds succeeded. The hosted dashboard uses the new brand, both domains remain supported, and the new native callback is allow-listed. The source baseline was begun on 17 November and published on 18 November local time. The dated checkpoint tag retains its original 17 November identifier.
+
+## Android playtest — 18 November 2026
+
+The `android-test-0.1.1` tag adds the normal saved-game Android APK builder, landscape/touch interruption handling, the account callback registration and adaptive Bot launcher artwork. The original `starfall-plus-base-2026-11-17` recovery point is unchanged. The Android release carries the APK and its checksum; private signing keys, local configuration and generated build caches remain excluded from source.
+
+The Android build and artifact inspection passed, along with Android configuration/interruption fixtures and the 21,000 learning checks. Real-phone gameplay, accounts, layout and performance remain unverified. See `ANDROID_TESTING.md` and `PROJECT_STATUS.md` for the exact limits.

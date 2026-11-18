@@ -95,7 +95,13 @@ public sealed partial class StarfallPlusGame
     }
 
     private void OnApplicationQuit() { SaveLearningProfile(); SaveExpedition(); }
-    private void OnApplicationPause(bool paused) { if (paused) SaveExpedition(); }
+    private void OnApplicationPause(bool paused)
+    {
+        if (!paused) return;
+        ClearTouchControls();
+        if (Application.isMobilePlatform) PauseForMobileInterruption();
+        SaveLearningProfile(); SaveExpedition();
+    }
 
     private void EarnCombatExperience(Meteor enemy)
     {

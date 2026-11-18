@@ -1,5 +1,12 @@
 # Starfall+ changelog
 
+## 0.1.1 — Android playtest, 18 November 2026
+
+- Add a normal saved-game APK build for ARMv7 and ARM64 phones, landscape orientation, minimum Android 8.0 and the OpenGL ES renderer.
+- Clear held touch controls and pause active combat when the mobile app loses focus; save learning and expedition progress when backgrounded.
+- Register the native account callback on Unity's generated GameActivity manifest. Google provider setup and real callback-flow verification remain pending.
+- Add a padded adaptive Bot launcher icon, Android configuration, callback and interruption checks, plus installation and WhatsApp-sharing instructions. Physical-phone usability and performance remain playtest work.
+
 ## 0.1.0 — Base checkpoint, 18 November 2026
 
 - Adopt the pixel-art astronaut/elemental-meteor Unity game as the new active base.

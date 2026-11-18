@@ -13,6 +13,8 @@ A child-friendly pixel-art maths game: explore a spaceship as an astronaut, coll
 - **Current decisions:** [Docs/DECISIONS.md](Docs/DECISIONS.md).
 - **Verified state and remaining work:** [Docs/PROJECT_STATUS.md](Docs/PROJECT_STATUS.md).
 - **Checkpoint and recovery:** [Docs/CHECKPOINT.md](Docs/CHECKPOINT.md).
+- **Android APK:** [0.1.1 playtest download](https://github.com/TheUnFrgiven/starfall-plus/releases/tag/android-test-0.1.1).
+- **Android phone testing:** [Install, share and test the APK](Docs/ANDROID_TESTING.md).
 
 ## Included in the baseline
 
@@ -32,9 +34,12 @@ The normal build saves progress and can upload signed-in learning events. Previe
 # Substitute your Unity executable path if needed.
 Unity -batchmode -nographics -quit -projectPath . -executeMethod StarfallPlusBuild.BuildMac -logFile build-mac.log
 Unity -batchmode -nographics -quit -projectPath . -executeMethod StarfallPlusBuild.BuildPreview -logFile build-preview.log
+Unity -batchmode -nographics -quit -buildTarget Android -projectPath . -executeMethod StarfallPlusBuild.BuildAndroid -logFile build-android.log
 ```
 
 Outputs: `Build/StarfallPlus.app` and `Build/StarfallPlusPreview.app`. Display names are **Starfall+** and **Starfall+ Preview**. The normal desktop app identifier is `com.starfallplus.game`; Preview uses `com.starfallplus.preview`.
+
+Android requires this editor's Android Build Support, SDK/NDK Tools and OpenJDK. Its normal saved-game output is `Build/Android/StarfallPlus-android-0.1.1.apk`, an installable universal ARMv7/ARM64 APK with package `com.starfallplus.game`. Send it through WhatsApp as a document/file. See the phone-testing guide for requirements and device checks; the desktop Preview is separate.
 
 For a new checkout, copy `Assets/Resources/StarfallOnline.example.txt` to the ignored `StarfallOnline.json` and supply public client configuration. The owner's local checkout is configured. Never commit SMTP credentials, server keys, sessions, personal saves or student records.
 
@@ -43,6 +48,7 @@ For a new checkout, copy `Assets/Resources/StarfallOnline.example.txt` to the ig
 ```sh
 Unity -batchmode -nographics -quit -projectPath . -executeMethod StarfallPlusBaselineChecks.Run -logFile baseline-checks.log
 Unity -batchmode -nographics -quit -projectPath . -executeMethod StarfallPlusLearningUpgradeChecks.Run -logFile learning-checks.log
+Unity -batchmode -nographics -quit -projectPath . -executeMethod StarfallPlusAndroidChecks.Run -logFile android-checks.log
 cd Backend
 npm ci --ignore-scripts
 npm test

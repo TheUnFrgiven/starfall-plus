@@ -1,6 +1,6 @@
 # Starfall+ project record
 
-Updated 17 November 2026 at the owner's request to adopt this version as the new game base.
+Updated 18 November 2026. The owner's adopted Unity base now also has an Android playtest build.
 
 ## Identity and source of truth
 
@@ -12,7 +12,9 @@ Updated 17 November 2026 at the owner's request to adopt this version as the new
 
 ## State
 
-The pixel-art astronaut/elemental-meteor game, original music, collection/cosmetics, progressive unlocks, contextual Bot, expanded ship, 14-topic maths flow and account/statistics backend are included. Gmail sender credentials were replaced directly by the owner; real signup, delivered confirmation and the authenticated parent dashboard now work. Google OAuth setup, live multi-account statistics validation, durable offline sync, full cross-device saves, mobile exports and long-session balance remain unfinished.
+The pixel-art astronaut/elemental-meteor game, original music, collection/cosmetics, progressive unlocks, contextual Bot, expanded ship, 14-topic maths flow and account/statistics backend are included. Gmail sender credentials were replaced directly by the owner; real signup, delivered confirmation and the authenticated parent dashboard now work. Google OAuth setup, live multi-account statistics validation, durable offline sync, full cross-device saves, iOS export and long-session balance remain unfinished.
+
+Android 0.1.1 is a normal saved-game APK for ARMv7/ARM64, Android 8.0+ and OpenGL ES 3.1. The official toolchain is installed; the build, APK signature/manifest, 16 KB ARM64 alignment, Android interruption checks and 21,000 learning checks passed. Physical-phone gameplay, input, accounts and performance remain unverified. Share the APK through WhatsApp as a document/file; see `Docs/ANDROID_TESTING.md`. Private signing files and native build caches stay ignored.
 
 Do not infer completion from older build reports or fixtures. Preview does not persist or upload gameplay events. Use the normal saved build for the live statistics flow. The clearer gateway email-error response is committed but its hosted deployment remains pending after the browser editor rejected the attempted update; the working deployed gateway remains in place.
 

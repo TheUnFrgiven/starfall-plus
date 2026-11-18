@@ -55,7 +55,20 @@ public sealed partial class StarfallPlusGame
 
     private void OnApplicationFocus(bool focused)
     {
-        if (!focused) { touchMove = Vector2.zero; moveFinger = -1; mouseMoveStick = touchBoost = touchNova = false; }
+        if (!focused)
+        {
+            ClearTouchControls();
+            if (Application.isMobilePlatform) PauseForMobileInterruption();
+        }
+    }
+
+    private void ClearTouchControls()
+    { touchMove = Vector2.zero; moveFinger = -1; mouseMoveStick = touchBoost = touchNova = false; }
+
+    private void PauseForMobileInterruption()
+    {
+        ClearTouchControls();
+        if (!menuOpen && (phase == Phase.Day || phase == Phase.Night || phase == Phase.Warning)) pauseOpen = true;
     }
 
     private void DrawTouchControls()
